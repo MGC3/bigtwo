@@ -4,17 +4,18 @@ import (
     "net/http"
     "log"
     "github.com/gorilla/mux"
+    "github.com/gorilla/handlers"
 )
 
-func YourHandler(w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("Gorilla!\n"))
+func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusCreated)
 }
 
 func main() {
     r := mux.NewRouter()
     // Routes consist of a path and a handler function.
-    r.HandleFunc("/", YourHandler)
+    r.HandleFunc("/rooms", CreateRoomHandler).Methods("POST")
 
     // Bind to a port and pass our router in
-    log.Fatal(http.ListenAndServe(":8000", r))
+    log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
 }

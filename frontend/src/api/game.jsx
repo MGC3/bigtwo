@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiUrl = "http://localhost:8000/rooms/";
+const apiUrl = "http://localhost:8000/rooms";
 
 export const createGame = () => {
   return axios({
@@ -11,7 +11,7 @@ export const createGame = () => {
 
 export const joinGame = (formData) => {
   return axios({
-    url: `${apiUrl}formData`,
+    url: `${apiUrl}/formData`,
     method: "GET",
   });
 };
