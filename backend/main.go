@@ -5,6 +5,8 @@ import (
     "log"
     "github.com/gorilla/mux"
     "github.com/gorilla/handlers"
+    "github.com/jinzhu/gorm"
+    _ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
