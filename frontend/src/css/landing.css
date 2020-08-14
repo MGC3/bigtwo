@@ -1,0 +1,56 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&display=swap");
+
+body,
+input,
+textarea,
+button {
+  font-family: "Noto Sans JP", sans-serif;
+}
+
+body {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.app-container {
+  display: flex;
+  flex-flow: column wrap;
+  align-content: center;
+  text-align: center;
+}
+
+.title {
+  font-size: 64px;
+}
+
+.landing-form {
+  display: flex;
+  flex-flow: column wrap;
+  align-content: center;
+  text-align: center;
+}
+
+.primary-cta-button {
+  border: dashed;
+  background: transparent;
+  padding: 12px 24px;
+  max-width: 320px;
+}
+
+.text {
+  font-weight: 900;
+  font-size: 40px;
+  color: #212426;
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+
+  background: linear-gradient(to right, #121c84, #8278da);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: 0.3s;
+}
+
+.primary-cta-button:hover {
+  cursor: pointer;
+  opacity: 0.6;
+}
