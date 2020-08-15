@@ -1,5 +1,9 @@
 package app
 
+import (
+    "fmt"
+    "github.com/gorilla/websocket"
+)
 
 const (
     maxNumPlayersInRoom = 4
@@ -24,9 +28,8 @@ type room struct {
 
 // Manages all of the active rooms.
 // Determines whether incoming clients can create/join a room.
-// 
 type FrontDesk struct {
-    activeRooms map[int]room
+    activeRooms map[int]*room
     nextId int
 }
 
@@ -34,13 +37,31 @@ type FrontDesk struct {
 func (f *FrontDesk) CreateRoom() (int, error) {
     currentRoomId := f.nextId
     f.nextId += 1
-    f.activeRooms[currentRoomId] = room{players: []player{}, state: roomWaitingForPlayers}
+    f.activeRooms[currentRoomId] = &room{players: []player{}, state: roomWaitingForPlayers}
     return currentRoomId, nil
+}
+
+func (f *FrontDesk) JoinRoom(roomId int, conn *websocket.Conn) error {
+    if _, ok := f.activeRooms[roomId]; !ok {
+        return fmt.Errorf("No active room with ID %d", roomId)
+    }
+
+    if len(f.activeRooms[roomId].players) >= maxNumPlayersInRoom {
+        return fmt.Errorf("Max number of players in room %d", roomId)
+    }
+
+    newPlayer := player {
+        id: 0,
+        displayName: "test",
+        conn: conn,
+    }
+    f.activeRooms[roomId].players = append(f.activeRooms[roomId].players, newPlayer)
+    return nil
 }
 
 func NewFrontDesk() FrontDesk {
     ret := FrontDesk{}
-    ret.activeRooms = make(map[int]room)
+    ret.activeRooms = make(map[int]*room)
     ret.nextId = 0
     return ret
 }

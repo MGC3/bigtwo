@@ -1,7 +1,11 @@
 package app
 
+import (
+    "github.com/gorilla/websocket"
+)
+
 type player struct {
     id int
     displayName string
-    connectionInfo string
+    conn *websocket.Conn
 }
