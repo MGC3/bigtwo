@@ -8,30 +8,12 @@ class App extends Component {
     super(props);
 
     this.state = {
-      test: null,
+      roomId: "",
     };
   }
 
-
   componentDidMount() {
-    let ws = new WebSocket("ws://localhost:8000/rooms/ws");
-    console.log("Component logged")
-    ws.onopen = () => {
-      // on connecting, do nothing but log it to the console
-      console.log("connected");
-    };
-
-    ws.onmessage = (evt) => {
-      // listen to data sent from the websocket server
-      const message = JSON.parse(evt.data);
-      this.setState({ dataFromServer: message });
-      console.log(message);
-    };
-
-    ws.onclose = () => {
-      console.log("disconnected");
-      // automatically try to reconnect on connection loss
-    };
+    console.log("Component Mounted");
   }
 
   handleCreateGame = () => {
@@ -40,8 +22,32 @@ class App extends Component {
     // if success, join game
   };
 
-  handleJoinRoom = () => {
-    alert("Join Room Clicked");
+  handleJoinRoom = (e, roomId) => {
+    e.preventDefault();
+    this.ws = new WebSocket(`ws://localhost:8000/rooms/${roomId}`);
+    console.log("Attempting to join", roomId);
+    this.ws.onopen = () => {
+      // on connecting, do nothing but log it to the console
+      console.log("connected");
+    };
+
+    this.ws.onmessage = (evt) => {
+      // listen to data sent from the websocket server
+      const message = JSON.parse(evt.data);
+      this.setState({ dataFromServer: message });
+      console.log(message);
+    };
+
+    this.ws.onclose = () => {
+      console.log("disconnected");
+      // automatically try to reconnect on connection loss
+    };
+  };
+
+  handleTextFieldChange = (e) => {
+    this.setState({
+      roomId: e.target.value,
+    });
   };
 
   render() {
@@ -53,13 +59,18 @@ class App extends Component {
         </button>
         <div>OR</div>
         <form className="landing-form">
-          <button className="primary-cta-button" onClick={this.handleJoinRoom}>
+          <button
+            className="primary-cta-button"
+            onClick={(e) => this.handleJoinRoom(e, this.state.roomId)}
+          >
             <span className="text">Join Game</span>
           </button>
           <TextField
             id="outlined-basic"
             label="Enter room code"
             variant="outlined"
+            value={this.state.roomId}
+            onChange={this.handleTextFieldChange}
           />
         </form>
       </div>
