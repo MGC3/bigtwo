@@ -37,3 +37,10 @@ func (f *FrontDesk) CreateRoom() (int, error) {
     f.activeRooms[currentRoomId] = room{players: []player{}, state: roomWaitingForPlayers}
     return currentRoomId, nil
 }
+
+func NewFrontDesk() FrontDesk {
+    ret := FrontDesk{}
+    ret.activeRooms = make(map[int]room)
+    ret.nextId = 0
+    return ret
+}

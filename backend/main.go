@@ -39,7 +39,7 @@ func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    frontDesk = app.FrontDesk{}
+    frontDesk = app.NewFrontDesk()
     frontDeskLock = sync.Mutex{}
     r := mux.NewRouter()
     // Routes consist of a path and a handler function.
