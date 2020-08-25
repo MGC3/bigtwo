@@ -1,7 +1,63 @@
 import React, { Component } from "react";
 import { createGame } from "../api/game";
+import { Hand } from "./Hand";
 import TextField from "@material-ui/core/TextField";
 import "../css/landing.css";
+
+let fakeData = [
+  {
+    rank: "K",
+    suit: "H",
+  },
+  {
+    rank: "2",
+    suit: "D",
+  },
+  {
+    rank: "3",
+    suit: "C",
+  },
+  {
+    rank: "K",
+    suit: "H",
+  },
+  {
+    rank: "2",
+    suit: "D",
+  },
+  {
+    rank: "3",
+    suit: "C",
+  },
+  {
+    rank: "K",
+    suit: "H",
+  },
+  {
+    rank: "2",
+    suit: "D",
+  },
+  {
+    rank: "3",
+    suit: "C",
+  },
+  {
+    rank: "K",
+    suit: "H",
+  },
+  {
+    rank: "2",
+    suit: "D",
+  },
+  {
+    rank: "3",
+    suit: "C",
+  },
+  {
+    rank: "3",
+    suit: "C",
+  },
+];
 
 class App extends Component {
   constructor(props) {
@@ -73,6 +129,7 @@ class App extends Component {
             onChange={this.handleTextFieldChange}
           />
         </form>
+        <Hand cards={fakeData} />
       </div>
     );
   }
