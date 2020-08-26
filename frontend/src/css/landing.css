@@ -15,7 +15,7 @@ body {
 .app-container {
   display: flex;
   flex-flow: column wrap;
-  align-content: center;
+  align-items: center;
   text-align: center;
 }
 
@@ -26,12 +26,12 @@ body {
 .landing-form {
   display: flex;
   flex-flow: column wrap;
-  align-content: center;
+  align-items: center;
   text-align: center;
 }
 
 .primary-cta-button {
-  border: dashed;
+  border: none;
   background: transparent;
   padding: 12px 24px;
   max-width: 320px;

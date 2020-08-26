@@ -54,8 +54,8 @@ let fakeData = [
     suit: "C",
   },
   {
-    rank: "3",
-    suit: "C",
+    rank: "2",
+    suit: "S",
   },
 ];
 
