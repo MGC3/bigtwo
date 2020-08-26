@@ -19,42 +19,42 @@ let fakeData = [
   },
   {
     rank: "K",
-    suit: "H",
+    suit: "S",
   },
   {
     rank: "2",
-    suit: "D",
+    suit: "H",
   },
   {
     rank: "3",
-    suit: "C",
+    suit: "D",
   },
   {
     rank: "K",
-    suit: "H",
-  },
-  {
-    rank: "2",
-    suit: "D",
-  },
-  {
-    rank: "3",
     suit: "C",
   },
   {
-    rank: "K",
-    suit: "H",
-  },
-  {
-    rank: "2",
+    rank: "5",
     suit: "D",
   },
   {
-    rank: "3",
+    rank: "6",
     suit: "C",
   },
   {
-    rank: "2",
+    rank: "7",
+    suit: "H",
+  },
+  {
+    rank: "8",
+    suit: "D",
+  },
+  {
+    rank: "J",
+    suit: "C",
+  },
+  {
+    rank: "J",
     suit: "S",
   },
 ];

@@ -36,7 +36,11 @@ export class Card extends Component {
     const icon = iconMaker(this.state.data.suit);
 
     return (
-      <div className="card-container" style={cardStyle}>
+      <div
+        className={"card-container " + (this.props.selected && "card-selected")}
+        style={cardStyle}
+        onClick={() => this.props.handleCardSelect(this.state.data)}
+      >
         <div className="upper">
           <div className="card-rank">{this.state.data.rank}</div>
           <div className="card-suit">{icon}</div>
