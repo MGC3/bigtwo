@@ -36,12 +36,12 @@ export class Hand extends Component {
   render() {
     return (
       <>
-        <h1>
-          SelectedCard state is:
+        <h1 style={{ marginBottom: "64px" }}>
+          SelectedCards state is:
           {this.state.selectedCards.length > 0 &&
             this.state.selectedCards.map((card) => (
               <span>
-                {card.rank} of {card.suit}
+                {card.rank} of {card.suit},{" "}
               </span>
             ))}
           {this.state.selectedCards.length === 0 && "None Selected"}
