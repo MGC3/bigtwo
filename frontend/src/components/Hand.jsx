@@ -50,7 +50,7 @@ export class Hand extends Component {
           {this.state.cards.map((card, i) => {
             return (
               <Card
-                key={i}
+                key={card.rank + card.suit}
                 data={card}
                 zdex={i}
                 handleCardSelect={this.handleCardSelect}
