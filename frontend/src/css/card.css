@@ -10,6 +10,8 @@
   align-items: flex-start;
   margin-right: -77px;
   transition-duration: 0.15s;
+  background: #ffffff;
+  z-index: auto;
 }
 
 .lower {

@@ -8,7 +8,6 @@ export class Card extends Component {
 
     this.state = {
       data: this.props.data,
-      zdex: this.props.zdex + 1 * 100,
     };
   }
 
@@ -28,17 +27,11 @@ export class Card extends Component {
       }
     };
 
-    const cardStyle = {
-      zIndex: `${this.state.zdex}`,
-      position: "relative",
-    };
-
     const icon = iconMaker(this.state.data.suit);
 
     return (
       <div
         className={"card-container " + (this.props.selected && "card-selected")}
-        style={cardStyle}
         onClick={() => this.props.handleCardSelect(this.state.data)}
       >
         <div className="upper">

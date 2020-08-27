@@ -52,7 +52,6 @@ export class Hand extends Component {
               <Card
                 key={card.rank + card.suit}
                 data={card}
-                zdex={i}
                 handleCardSelect={this.handleCardSelect}
                 selected={this.isCardSelected(card)}
               />
