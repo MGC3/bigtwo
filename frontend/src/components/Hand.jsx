@@ -42,6 +42,7 @@ export class Hand extends Component {
   render() {
     return (
       <>
+        {/* TODO: debugging code, remove later vvvvvvvvv*/}
         <h1 style={{ marginBottom: "64px" }}>
           SelectedCards state is:
           {this.state.selectedCards.length > 0 &&
@@ -52,6 +53,7 @@ export class Hand extends Component {
             ))}
           {this.state.selectedCards.length === 0 && "None Selected"}
         </h1>
+        {/* TODO: debugging code, remove later ^^^^^^^^^*/}
         <div className="hand-container">
           {this.state.cards.map((card, i) => {
             return (

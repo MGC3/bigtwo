@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
 import { createGame } from "../api/game";
 import { Hand } from "./Hand";
 import TextField from "@material-ui/core/TextField";
@@ -15,32 +16,42 @@ class Landing extends Component {
     };
   }
 
-  handleCreateGame = () => {
+  handleCreateGame = (e) => {
     // create game
-    createGame();
-    // if success, join game
+    createGame()
+      .then((res) => {
+        let roomId = res.data.RoomId;
+        this.handleJoinRoom(e, roomId);
+      })
+      .catch((err) => console.log("Error creating game: ", err));
   };
 
   handleJoinRoom = (e, roomId) => {
     e.preventDefault();
-    this.ws = new WebSocket(`ws://localhost:8000/rooms/${roomId}`);
-    console.log("Attempting to join", roomId);
-    this.ws.onopen = () => {
-      // on connecting, do nothing but log it to the console
-      console.log("connected");
-    };
 
-    this.ws.onmessage = (evt) => {
-      // listen to data sent from the websocket server
-      const message = JSON.parse(evt.data);
-      this.setState({ dataFromServer: message });
-      console.log(message);
-    };
+    // TODO: verify if the room id is valid. If not, show error and don't send the user to the lobby page
+    this.props.history.push("/room/" + roomId);
 
-    this.ws.onclose = () => {
-      console.log("disconnected");
-      // automatically try to reconnect on connection loss
-    };
+    // TODO: remove this code after figuring out new WS approach (connecting on page
+    // load, instead of on join room request)
+    // this.ws = new WebSocket(`ws://localhost:8000/rooms/${roomId}`);
+    // console.log("Attempting to join", roomId);
+    // this.ws.onopen = () => {
+    //   // on connecting, do nothing but log it to the console
+    //   console.log("connected");
+    // };
+
+    // this.ws.onmessage = (evt) => {
+    //   // listen to data sent from the websocket server
+    //   const message = JSON.parse(evt.data);
+    //   this.setState({ dataFromServer: message });
+    //   console.log(message);
+    // };
+
+    // this.ws.onclose = () => {
+    //   console.log("disconnected");
+    //   // automatically try to reconnect on connection loss
+    // };
   };
 
   handleTextFieldChange = (e) => {
@@ -53,7 +64,10 @@ class Landing extends Component {
     return (
       <>
         <h1 className="title">Big Two</h1>
-        <button className="primary-cta-button" onClick={this.handleCreateGame}>
+        <button
+          className="primary-cta-button"
+          onClick={(e) => this.handleCreateGame(e)}
+        >
           <span className="text">New Game</span>
         </button>
         <div>OR</div>
@@ -78,4 +92,4 @@ class Landing extends Component {
   }
 }
 
-export default Landing;
+export default withRouter(Landing);
