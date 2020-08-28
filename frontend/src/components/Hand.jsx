@@ -13,6 +13,7 @@ export class Hand extends Component {
   }
 
   handleCardSelect = (card) => {
+    // deselect the card if it's already been selected
     if (this.state.selectedCards.includes(card)) {
       let updatedCards = [...this.state.selectedCards].filter(
         (d) => d !== card
@@ -21,6 +22,11 @@ export class Hand extends Component {
         selectedCards: updatedCards,
       });
     } else {
+      // don't allow the user to select more than 5 cards at a time
+      if (this.state.selectedCards.length > 4) {
+        return;
+      }
+      // add the card to the selectedCards array
       let updatedCards = [...this.state.selectedCards];
       updatedCards.push(card);
       this.setState({
