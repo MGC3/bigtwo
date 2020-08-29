@@ -11,25 +11,21 @@
 
 .primary-cta-button {
   border: none;
-  background: transparent;
-  padding: 12px 24px;
+  border-radius: 32px;
+  margin: 24px 0;
+  background: #2b2c34;
+  padding: 12px 32px;
   max-width: 320px;
-}
-
-.text {
-  font-weight: 900;
-  font-size: 40px;
-  color: #212426;
-  text-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
-
-  background: linear-gradient(to right, #121c84, #8278da);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  transition: 0.3s;
+  color: #b8bfff;
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: 2px;
+  transition: all 0.2s ease-out;
 }
 
 .primary-cta-button:hover {
   cursor: pointer;
-  opacity: 0.6;
+  color: white;
+  background: #24252c;
+  transform: scale(1.04);
 }

@@ -68,23 +68,23 @@ class Landing extends Component {
           className="primary-cta-button"
           onClick={(e) => this.handleCreateGame(e)}
         >
-          <span className="text">New Game</span>
+          <span className="text">Create New Game</span>
         </button>
         <div>OR</div>
         <form className="landing-form">
+          <TextField
+            id="outlined-basic"
+            label="Enter room code"
+            value={this.state.roomId}
+            onChange={this.handleTextFieldChange}
+            fullWidth="true"
+          />
           <button
             className="primary-cta-button"
             onClick={(e) => this.handleJoinRoom(e, this.state.roomId)}
           >
-            <span className="text">Join Game</span>
+            Join Existing Game
           </button>
-          <TextField
-            id="outlined-basic"
-            label="Enter room code"
-            variant="outlined"
-            value={this.state.roomId}
-            onChange={this.handleTextFieldChange}
-          />
         </form>
         <Hand cards={mockCardsData} />
       </>
