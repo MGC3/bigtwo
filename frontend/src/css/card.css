@@ -26,6 +26,7 @@
 
 .card-selected {
   transform: translateY(-50px);
+  background: #fffae6;
 }
 
 .card-selected:hover {

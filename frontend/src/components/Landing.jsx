@@ -77,7 +77,7 @@ class Landing extends Component {
             label="Enter room code"
             value={this.state.roomId}
             onChange={this.handleTextFieldChange}
-            fullWidth="true"
+            fullWidth={true}
           />
           <button
             className="primary-cta-button"
