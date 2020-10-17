@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-import { createGame } from "../api/game";
-import { Hand } from "./Hand";
-import TextField from "@material-ui/core/TextField";
-import "../css/app.css";
-import "../css/landing.css";
-import { mockCardsData } from "../api/testData";
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { createGame } from '../api/game';
+import { Hand } from './Hand';
+import TextField from '@material-ui/core/TextField';
+import '../css/app.css';
+import '../css/landing.css';
+import { mockCardsData } from '../api/testData';
 
-class Landing extends Component {
+export class Landing extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      roomId: "",
+      roomId: '',
     };
   }
 
@@ -23,14 +23,14 @@ class Landing extends Component {
         let roomId = res.data.RoomId;
         this.handleJoinRoom(e, roomId);
       })
-      .catch((err) => console.log("Error creating game: ", err));
+      .catch((err) => console.log('Error creating game: ', err));
   };
 
   handleJoinRoom = (e, roomId) => {
     e.preventDefault();
 
     // TODO: verify if the room id is valid. If not, show error and don't send the user to the lobby page
-    this.props.history.push("/room/" + roomId);
+    this.props.history.push('/room/' + roomId);
 
     // TODO: remove this code after figuring out new WS approach (connecting on page
     // load, instead of on join room request)
@@ -92,4 +92,4 @@ class Landing extends Component {
   }
 }
 
-export default withRouter(Landing);
+// export default withRouter(Landing);
