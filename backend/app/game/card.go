@@ -14,6 +14,7 @@ type Card struct {
     suit int 
 }
 
+
 //
 // Public/exported functions
 //
@@ -37,7 +38,7 @@ func NewCard(rank string, suit string) (Card, error) {
 
 // Returns true if c > other, false otherwise
 // Assumes both c and other are valid cards
-func (c *Card) GreaterThan(other Card) bool {
+func (lhs *Card) GreaterThan(rhs *Card) bool {
     if c.rank == other.rank {
         return c.suit > other.suit
     }
