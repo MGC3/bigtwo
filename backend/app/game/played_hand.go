@@ -11,7 +11,7 @@ const (
     pair
     triple 
 
-    // Five card hands are below
+    // Five card hands are below ordered by priority
     straight
     flush
     fullHouse
@@ -100,6 +100,7 @@ func (lhs PlayedHand) Beats(rhs PlayedHand) (bool, error) {
         return highCard(lhs.Cards).GreaterThan(highCard(rhs.Cards)), nil
     }
 
+    // Handle 5 card hands
     if lhs.Type != rhs.Type {
         return lhs.Type > rhs.Type, nil
     }
@@ -112,11 +113,21 @@ func (lhs PlayedHand) Beats(rhs PlayedHand) (bool, error) {
     // and suits are only used as a tiebreaker, but I don't think that's how
     // we used to play
     // https://en.wikipedia.org/wiki/Big_two
+    // Here, flushes are ranked by suit (C < S < H < D). Ties are broken by
+    // highest card.
     if lhs.Type == flush {
-        return lhs.Cards[0].suit > rhs.Cards[0].suit
+        lhsSuit := lhs.Cards[0].suit
+        rhsSuit := rhs.Cards[0].suit
+        if lhsSuit == rhsSuit {
+            return highCard(lhs.Cards).GreaterThan(highCard(rhs.Cards)), nil
+        }
+        return lhsSuit > rhsSuit, nil
     }
 
     // straight and straight flush are ranked by highest card
+    // According to wikipedia, A2345 is the highest straight,
+    // followed by 23456, followed by 10JQKA.
+    // Is KA234 not a straight then?
     return highCard(lhs.Cards).GreaterThan(highCard(rhs.Cards)), nil
 }
 

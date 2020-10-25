@@ -36,7 +36,7 @@ func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     fmt.Printf("Got create room request. New room is %d\n", roomId)
-    
+
     w.Header().Set("Content-Type", "application/json")
     response := CreateRoomResponseBody{
         RoomId: roomId,
@@ -63,7 +63,7 @@ func JoinRoomHandler(w http.ResponseWriter, r *http.Request) {
     frontDeskLock.Lock()
     err = frontDesk.JoinRoom(roomId, conn)
     frontDeskLock.Unlock()
-    
+
     if err != nil {
         log.Fatal(err)
     }

@@ -2,116 +2,94 @@ package game
 
 import (
     "testing"
+    "github.com/stretchr/testify/assert"
 )
 
+var threeOfClubs, _ = NewCard("3", "C")
+var fourOfHearts, _ = NewCard("4", "H")
+var fiveOfClubs, _ = NewCard("5", "C")
+var sixOfClubs, _ = NewCard("6", "C")
+var sevenOfClubs, _ = NewCard("7", "C")
+var eightOfSpades, _ = NewCard("8", "S")
+var nineOfDiamonds, _ = NewCard("9", "S")
+var tenOfHearts, _ = NewCard("10", "H")
+var tenOfSpades, _ = NewCard("10", "S")
+var tenOfDiamonds, _ = NewCard("10", "D")
+var kingOfClubs, _ = NewCard("K", "C")
+
+func assertValidHand(assert *assert.Assertions, hand PlayedHand, err error, expectedType handType, expectedString string) {
+    assert.Nil(err)
+    assert.Equal(hand.Type, expectedType)
+    assert.Equal(hand.ToString(), expectedString)
+}
+
+func assertBeats(assert *assert.Assertions, higher PlayedHand, lower PlayedHand) {
+    assert.True(higher.Beats(lower))
+    assert.False(lower.Beats(higher))
+}
+
 func TestNewPlayedHandSingle(t *testing.T) {
-    tenOfDiamonds, _ := NewCard("10", "D")
-    singleCardHand := []Card {
-        tenOfDiamonds,
-    }
+    assert := assert.New(t)
 
-    zeroCardHand := []Card {}
+    hand, err := NewPlayedHand([]Card{tenOfDiamonds})
+    assertValidHand(assert, hand, err, single, "10D")
 
-    hand, err := NewPlayedHand(singleCardHand)
+    lowerHand, err := NewPlayedHand([]Card{fourOfHearts})
+    assertValidHand(assert, lowerHand, err, single, "4H")
 
-    if err != nil || hand.Type != single || hand.ToString() != "10D" {
-        t.Errorf("Could not create single hand of 10D: %v", hand)
-    }
+    assertBeats(assert, hand, lowerHand)
 
-    hand, err = NewPlayedHand(zeroCardHand)
-    if err == nil {
-        t.Errorf("Created zero card hand: %v", hand)
-    }
+    hand, err = NewPlayedHand([]Card{})
+    assert.NotNil(err)
 }
 
 func TestNewPlayedHandPair(t *testing.T) {
-    tenOfDiamonds, _ := NewCard("10", "D")
-    tenOfHearts, _ := NewCard("10", "H")
-    nineOfDiamonds, _ := NewCard("9", "S")
+    assert := assert.New(t)
+    tdPair, err := NewPlayedHand([]Card{tenOfDiamonds, tenOfHearts})
 
-    goodPair := []Card {
-        tenOfDiamonds,
-        tenOfHearts,
-    }
+    assertValidHand(assert, tdPair, err, pair, "10D, 10H")
 
-    badPair := []Card {
-        tenOfDiamonds,
-        nineOfDiamonds,
-    }
-
-    hand, err := NewPlayedHand(goodPair)
-    if err != nil || hand.Type != pair || hand.ToString() != "10D, 10H" {
-        t.Errorf("Could not create good pair: %v, %v", hand, err)
-    }
-
-    hand, err = NewPlayedHand(badPair)
-    if err == nil {
-        t.Errorf("Made bad pair: %v, %v", hand, err)
-    }
+    _, err = NewPlayedHand([]Card{nineOfDiamonds, tenOfHearts})
+    assert.NotNil(err)
 }
 
 func TestNewPlayedHandTriple(t *testing.T) {
-    tenOfDiamonds, _ := NewCard("10", "D")
-    tenOfHearts, _ := NewCard("10", "H")
-    tenOfSpades, _ := NewCard("10", "S")
-    nineOfDiamonds, _ := NewCard("9", "S")
-
-    goodTriple := []Card {
+    assert := assert.New(t)
+    hand, err := NewPlayedHand([]Card {
         tenOfHearts,
         tenOfSpades,
         tenOfDiamonds,
-    }
+    })
 
-    badTriple := []Card {
+    assertValidHand(assert, hand, err, triple, "10H, 10S, 10D")
+    _, err = NewPlayedHand([]Card {
         tenOfHearts,
         tenOfSpades,
         nineOfDiamonds,
-    }
-
-    hand, err := NewPlayedHand(goodTriple)
-    if err != nil || hand.Type != triple || hand.ToString() != "10H, 10S, 10D" {
-        t.Errorf("Could not create good triple: %v, %v", hand, err)
-    }
-
-    hand, err = NewPlayedHand(badTriple)
-    if err == nil {
-        t.Errorf("Made bad triple: %v, %v", hand, err)
-    }
+    })
+    assert.NotNil(err)
 }
 
 func TestNewPlayedHandStraight(t *testing.T) {
-    three, _ := NewCard("3", "C")
-    four, _ := NewCard("4", "H")
-    five, _ := NewCard("5", "C")
-    six, _ := NewCard("6", "C")
-    seven, _ := NewCard("7", "C")
+    assert := assert.New(t)
+    hand, err := NewPlayedHand([]Card {
+        sevenOfClubs,
+        fourOfHearts,
+        fiveOfClubs,
+        threeOfClubs,
+        sixOfClubs,
+    })
 
-    goodStraight := []Card {
-        seven,
-        four,
-        five,
-        three,
-        six,
-    }
+    assertValidHand(assert, hand, err, straight, "7C, 4H, 5C, 3C, 6C")
+    
+    _, err = NewPlayedHand([]Card {
+        eightOfSpades,
+        sevenOfClubs,
+        sixOfClubs,
+        fourOfHearts,
+        threeOfClubs,
+    })
 
-    hand, err := NewPlayedHand(goodStraight)
-
-    if err != nil || hand.Type != straight || hand.ToString() != "7C, 4H, 5C, 3C, 6C" {
-        t.Errorf("Could not create good straight: %v, %v", hand, err)
-    }
-
-    eight, _ := NewCard("8", "S")
-    badStraight := []Card {
-        eight,
-        seven,
-        six,
-        four,
-        three,
-    }
-
-    hand, err = NewPlayedHand(badStraight)
-    if err == nil {
-        t.Errorf("Created bad straight: %v", hand)
-    }
-
+    assert.NotNil(err)
+    // TODO wrap around straights?
 }
