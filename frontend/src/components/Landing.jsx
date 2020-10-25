@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import { createGame } from '../api/game';
-import { Hand } from './Hand';
-import TextField from '@material-ui/core/TextField';
-import '../css/app.css';
-import '../css/landing.css';
-import { mockCardsData } from '../api/testData';
+import React, { Component } from "react";
+import { createGame } from "../api/game";
+import { Hand } from "./Hand";
+import TextField from "@material-ui/core/TextField";
+import "../css/app.css";
+import "../css/landing.css";
+import { mockCardsData } from "../api/testData";
 
 export class Landing extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      roomId: '',
+      roomId: "",
     };
   }
 
@@ -23,35 +22,13 @@ export class Landing extends Component {
         let roomId = res.data.RoomId;
         this.handleJoinRoom(e, roomId);
       })
-      .catch((err) => console.log('Error creating game: ', err));
+      .catch((err) => console.log("Error creating game: ", err));
   };
 
   handleJoinRoom = (e, roomId) => {
     e.preventDefault();
-
     // TODO: verify if the room id is valid. If not, show error and don't send the user to the lobby page
-    this.props.history.push('/room/' + roomId);
-
-    // TODO: remove this code after figuring out new WS approach (connecting on page
-    // load, instead of on join room request)
-    // this.ws = new WebSocket(`ws://localhost:8000/rooms/${roomId}`);
-    // console.log("Attempting to join", roomId);
-    // this.ws.onopen = () => {
-    //   // on connecting, do nothing but log it to the console
-    //   console.log("connected");
-    // };
-
-    // this.ws.onmessage = (evt) => {
-    //   // listen to data sent from the websocket server
-    //   const message = JSON.parse(evt.data);
-    //   this.setState({ dataFromServer: message });
-    //   console.log(message);
-    // };
-
-    // this.ws.onclose = () => {
-    //   console.log("disconnected");
-    //   // automatically try to reconnect on connection loss
-    // };
+    this.props.history.push("/room/" + roomId);
   };
 
   handleTextFieldChange = (e) => {
@@ -91,5 +68,3 @@ export class Landing extends Component {
     );
   }
 }
-
-// export default withRouter(Landing);

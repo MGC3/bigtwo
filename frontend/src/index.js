@@ -1,19 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
-import { Routes } from './routes/router';
-import { Layout } from './layout';
+import React from "react";
+import ReactDOM from "react-dom";
+import { BrowserRouter } from "react-router-dom";
+import { Routes } from "./routes/router";
+import { Layout } from "./layout";
+
+let socket = new WebSocket("ws://localhost:8000");
 
 const App = () => {
   return (
     <React.StrictMode>
       <BrowserRouter>
         <Layout>
-          <Routes />
+          <Routes socket={socket} />
         </Layout>
       </BrowserRouter>
     </React.StrictMode>
   );
 };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById("root"));
