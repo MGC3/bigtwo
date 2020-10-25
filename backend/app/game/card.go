@@ -14,7 +14,6 @@ type Card struct {
     suit int 
 }
 
-
 //
 // Public/exported functions
 //
@@ -38,12 +37,20 @@ func NewCard(rank string, suit string) (Card, error) {
 
 // Returns true if c > other, false otherwise
 // Assumes both c and other are valid cards
-func (lhs *Card) GreaterThan(rhs *Card) bool {
-    if c.rank == other.rank {
-        return c.suit > other.suit
+func (lhs Card) GreaterThan(rhs Card) bool {
+    if lhs.rank == rhs.rank {
+        return lhs.suit > rhs.suit
     }
 
-    return c.rank > other.rank
+    return lhs.rank > rhs.rank
+}
+
+func (c Card) ToString() string {
+    if !c.isValid() {
+        return "Invalid card"
+    }
+
+    return rankStrings[c.rank] + suitStrings[c.suit]
 }
 
 //
@@ -69,4 +76,8 @@ func suitIntFromString(suit string) (int, error) {
 
 func invalidCard() Card {
     return Card{-1, -1}
+}
+
+func (c Card) isValid() bool {
+    return c.rank >= 0 && c.rank < len(rankStrings) && c.suit >= 0 && c.suit < len(suitStrings)
 }

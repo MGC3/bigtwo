@@ -47,3 +47,21 @@ func TestCardGreaterThan(t *testing.T) {
         t.Errorf("2D !> 10S")
     } 
 }
+
+func TestCardToString(t *testing.T) {
+    tenOfHearts, _ := NewCard("10", "H")
+    threeOfClubs, _ := NewCard("3", "C")
+    twoOfDiamonds, _ := NewCard("2", "D")
+    
+    if tenOfHearts.ToString() != "10H" {
+        t.Errorf("Bad tostring 10H")
+    }
+
+    if threeOfClubs.ToString()  != "3C" {
+        t.Errorf("Bad to string 3C")
+    }
+
+    if twoOfDiamonds.ToString() != "2D" {
+        t.Errorf("Bad to string 2D")
+    }
+}
