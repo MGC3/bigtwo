@@ -2,35 +2,35 @@ package app
 
 import (
     "fmt"
+    "sync"
     "github.com/gorilla/websocket"
 )
 
 const (
     maxNumPlayersInRoom = 4
 )
-
-type roomState int
-
-const (
-    roomWaitingForPlayers roomState = iota
-    roomGameInProgress
-    roomGameFinished
-)
-
 // Represents a single room.
 // A room can have 0 to maxNumPlayersinRoom players.
 // The room's state (waiting, in progress, finished) is used
 // to determine if someone should be allowed to join a room.
+type roomId string
+
 type room struct {
+    id roomId
     players []player
-    state roomState
 }
 
-// Manages all of the active rooms.
-// Determines whether incoming clients can create/join a room.
-type FrontDesk struct {
-    activeRooms map[int]*room
+type WaitingArea struct {
+    WaitingForPlayers map[roomId]room
+    InGame map[roomId]room
+    ConnectedPlayersNotInRoom map[playerId]player 
     nextId int
+}
+
+// pass in waitgroup by channel to goroutines that are listening to the connection
+// so that I can swap send channels 
+func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {
+
 }
 
 // Creates a new room witha unique Id
@@ -59,9 +59,8 @@ func (f *FrontDesk) JoinRoom(roomId int, conn *websocket.Conn) error {
     return nil
 }
 
-func NewFrontDesk() FrontDesk {
-    ret := FrontDesk{}
-    ret.activeRooms = make(map[int]*room)
-    ret.nextId = 0
-    return ret
+func NewWaitingArea() WaitingArea {
+    return WaitingArea {
+        WaitingForPlayers: make map[]
+    }
 }

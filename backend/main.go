@@ -71,6 +71,15 @@ func JoinRoomHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Printf("Successfully joined room %d\n", roomId)
 }
 
+func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Print("Could not establish websocket connection")
+        return
+    }
+    
+}
+
 func main() {
 
     // I am a web programmer
@@ -80,8 +89,8 @@ func main() {
 
     r := mux.NewRouter()
     // Routes consist of a path and a handler function.
-    r.HandleFunc("/rooms", CreateRoomHandler).Methods("POST")
-    r.HandleFunc("/rooms/{roomId}", JoinRoomHandler).Methods("GET")
+    r.HandleFunc("/", EstablishWebsocketConnection).Methods("GET")
+    //r.HandleFunc("/rooms/{roomId}", JoinRoomHandler).Methods("GET")
 
     // Bind to a port and pass our router in
     log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
