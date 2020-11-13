@@ -1,16 +1,21 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
-import { pages } from "./routes";
+import { LandingPage } from "../pages/Landing";
+import { LobbyPage } from "../pages/Lobby";
 
 export const Routes = ({ socket }) => {
   return (
     <Switch>
-      {/* Routes */}
-      {pages.map(({ route }) => {
-        if ("component" in route) {
-          return <Route key={route.path} {...route} socket={socket} />;
-        }
-      })}
+      <Route
+        path="/"
+        exact
+        render={(props) => <LandingPage {...props} socket={socket} />}
+      />
+      <Route
+        path="/room/:roomId"
+        exact
+        render={(props) => <LobbyPage {...props} socket={socket} />}
+      />
     </Switch>
   );
 };

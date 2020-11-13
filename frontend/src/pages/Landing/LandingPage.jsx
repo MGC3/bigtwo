@@ -38,7 +38,7 @@ export const LandingPage = ({ history, socket }) => {
       >
         <span className="text">Create New Game</span>
       </button>
-      <div>OR {socketTest}</div>
+      <div>OR</div>
       <form className="landing-form">
         <TextField
           id="outlined-basic"
