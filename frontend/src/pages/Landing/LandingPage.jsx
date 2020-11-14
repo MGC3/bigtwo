@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createGame } from "../../api/game";
 import { Hand } from "../../components/Hand";
+import { Button } from "../../components/Button/Button";
 import TextField from "@material-ui/core/TextField";
 import "../../css/app.css";
 import "../../css/landing.css";
@@ -32,13 +33,8 @@ export const LandingPage = ({ history, socket }) => {
   return (
     <div className="app-container">
       <h1 className="title">Big Two</h1>
-      <button
-        className="primary-cta-button"
-        onClick={(e) => handleCreateGame(e)}
-      >
-        <span className="text">Create New Game</span>
-      </button>
-      <div>OR</div>
+      <Button onClick={(e) => handleCreateGame(e)} text="Create New Game" />
+      <div>OR </div>
       <form className="landing-form">
         <TextField
           id="outlined-basic"
@@ -47,12 +43,10 @@ export const LandingPage = ({ history, socket }) => {
           onChange={handleTextFieldChange}
           fullWidth={true}
         />
-        <button
-          className="primary-cta-button"
+        <Button
           onClick={(e) => handleJoinRoom(e, roomId)}
-        >
-          Join Existing Game
-        </button>
+          text="Join Existing Game"
+        />
       </form>
       <Hand cards={mockCardsData} />
     </div>

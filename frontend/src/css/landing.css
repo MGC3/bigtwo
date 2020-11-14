@@ -8,24 +8,3 @@
   align-items: center;
   text-align: center;
 }
-
-.primary-cta-button {
-  border: none;
-  border-radius: 32px;
-  margin: 24px 0;
-  background: #2b2c34;
-  padding: 12px 32px;
-  max-width: 320px;
-  color: #b8bfff;
-  font-weight: 500;
-  font-size: 24px;
-  letter-spacing: 2px;
-  transition: all 0.2s ease-out;
-}
-
-.primary-cta-button:hover {
-  cursor: pointer;
-  color: white;
-  background: #24252c;
-  transform: scale(1.04);
-}
