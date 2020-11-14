@@ -23,14 +23,13 @@ jobs:
 
     - name: Get dependencies
       run: |
-        # this is definitely cheating
-        set GOPATH /home/runner/work
-        echo $GOPATH
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+      env:
+        GOPATH: /home/runner/work
 
     - name: Build
       run: cd backend && make build
