@@ -1,8 +1,8 @@
 package game
 
 import (
-    "testing"
-    "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 var threeOfClubs, _ = NewCard("3", "C")
@@ -21,190 +21,190 @@ var tenOfDiamonds, _ = NewCard("10", "D")
 var kingOfClubs, _ = NewCard("K", "C")
 
 func assertValidHand(assert *assert.Assertions, hand PlayedHand, err error, expectedType handType, expectedString string) {
-    assert.Nil(err)
-    assert.Equal(hand.Type, expectedType)
-    assert.Equal(hand.ToString(), expectedString)
+	assert.Nil(err)
+	assert.Equal(hand.Type, expectedType)
+	assert.Equal(hand.ToString(), expectedString)
 }
 
 func assertBeats(assert *assert.Assertions, higher PlayedHand, lower PlayedHand) {
-    assert.True(higher.Beats(lower))
-    assert.False(lower.Beats(higher))
+	assert.True(higher.Beats(lower))
+	assert.False(lower.Beats(higher))
 }
 
 func TestNewPlayedHandSingle(t *testing.T) {
-    assert := assert.New(t)
+	assert := assert.New(t)
 
-    hand, err := NewPlayedHand([]Card{tenOfDiamonds})
-    assertValidHand(assert, hand, err, single, "10D")
+	hand, err := NewPlayedHand([]Card{tenOfDiamonds})
+	assertValidHand(assert, hand, err, single, "10D")
 
-    lowerHand, err := NewPlayedHand([]Card{fourOfHearts})
-    assertValidHand(assert, lowerHand, err, single, "4H")
+	lowerHand, err := NewPlayedHand([]Card{fourOfHearts})
+	assertValidHand(assert, lowerHand, err, single, "4H")
 
-    assertBeats(assert, hand, lowerHand)
+	assertBeats(assert, hand, lowerHand)
 
-    hand, err = NewPlayedHand([]Card{})
-    assert.NotNil(err)
+	hand, err = NewPlayedHand([]Card{})
+	assert.NotNil(err)
 }
 
 func TestNewPlayedHandPair(t *testing.T) {
-    assert := assert.New(t)
-    tdPair, err := NewPlayedHand([]Card{tenOfDiamonds, tenOfHearts})
+	assert := assert.New(t)
+	tdPair, err := NewPlayedHand([]Card{tenOfDiamonds, tenOfHearts})
 
-    assertValidHand(assert, tdPair, err, pair, "10D, 10H")
+	assertValidHand(assert, tdPair, err, pair, "10D, 10H")
 
-    _, err = NewPlayedHand([]Card{nineOfDiamonds, tenOfHearts})
-    assert.NotNil(err)
+	_, err = NewPlayedHand([]Card{nineOfDiamonds, tenOfHearts})
+	assert.NotNil(err)
 }
 
 func TestNewPlayedHandTriple(t *testing.T) {
-    assert := assert.New(t)
-    hand, err := NewPlayedHand([]Card {
-        tenOfHearts,
-        tenOfSpades,
-        tenOfDiamonds,
-    })
+	assert := assert.New(t)
+	hand, err := NewPlayedHand([]Card{
+		tenOfHearts,
+		tenOfSpades,
+		tenOfDiamonds,
+	})
 
-    assertValidHand(assert, hand, err, triple, "10H, 10S, 10D")
-    _, err = NewPlayedHand([]Card {
-        tenOfHearts,
-        tenOfSpades,
-        nineOfDiamonds,
-    })
-    assert.NotNil(err)
+	assertValidHand(assert, hand, err, triple, "10H, 10S, 10D")
+	_, err = NewPlayedHand([]Card{
+		tenOfHearts,
+		tenOfSpades,
+		nineOfDiamonds,
+	})
+	assert.NotNil(err)
 }
 
 func TestNewPlayedHandStraight(t *testing.T) {
-    assert := assert.New(t)
-    hand, err := NewPlayedHand([]Card {
-        sevenOfClubs,
-        fourOfHearts,
-        fiveOfClubs,
-        threeOfClubs,
-        sixOfClubs,
-    })
+	assert := assert.New(t)
+	hand, err := NewPlayedHand([]Card{
+		sevenOfClubs,
+		fourOfHearts,
+		fiveOfClubs,
+		threeOfClubs,
+		sixOfClubs,
+	})
 
-    assertValidHand(assert, hand, err, straight, "7C, 4H, 5C, 3C, 6C")
-    
-    _, err = NewPlayedHand([]Card {
-        eightOfSpades,
-        sevenOfClubs,
-        sixOfClubs,
-        fourOfHearts,
-        threeOfClubs,
-    })
+	assertValidHand(assert, hand, err, straight, "7C, 4H, 5C, 3C, 6C")
 
-    assert.NotNil(err)
-    // TODO wrap around straights?
+	_, err = NewPlayedHand([]Card{
+		eightOfSpades,
+		sevenOfClubs,
+		sixOfClubs,
+		fourOfHearts,
+		threeOfClubs,
+	})
+
+	assert.NotNil(err)
+	// TODO wrap around straights?
 }
 
 func TestNewPlayedHandFlush(t *testing.T) {
-    assert := assert.New(t)
-    hand, err := NewPlayedHand([]Card {
-        sevenOfClubs,
-        tenOfClubs,
-        fiveOfClubs,
-        threeOfClubs,
-        sixOfClubs,
-    })
+	assert := assert.New(t)
+	hand, err := NewPlayedHand([]Card{
+		sevenOfClubs,
+		tenOfClubs,
+		fiveOfClubs,
+		threeOfClubs,
+		sixOfClubs,
+	})
 
-    assertValidHand(assert, hand, err, flush, "7C, 10C, 5C, 3C, 6C")
-    
-    _, err = NewPlayedHand([]Card {
-        tenOfClubs,
-        sevenOfClubs,
-        sixOfClubs,
-        fourOfHearts,
-        threeOfClubs,
-    })
+	assertValidHand(assert, hand, err, flush, "7C, 10C, 5C, 3C, 6C")
 
-    assert.NotNil(err)
-    // TODO wrap around straights?
+	_, err = NewPlayedHand([]Card{
+		tenOfClubs,
+		sevenOfClubs,
+		sixOfClubs,
+		fourOfHearts,
+		threeOfClubs,
+	})
+
+	assert.NotNil(err)
+	// TODO wrap around straights?
 }
 
 func TestNewPlayedHandFullHouse(t *testing.T) {
-    assert := assert.New(t)
-    hand, err := NewPlayedHand([]Card {
-        tenOfDiamonds,
-        tenOfClubs,
-        tenOfSpades,
-        threeOfClubs,
-        threeOfSpades,
-    })
+	assert := assert.New(t)
+	hand, err := NewPlayedHand([]Card{
+		tenOfDiamonds,
+		tenOfClubs,
+		tenOfSpades,
+		threeOfClubs,
+		threeOfSpades,
+	})
 
-    assertValidHand(assert, hand, err, fullHouse, "10D, 10C, 10S, 3C, 3S")
-    
-    _, err = NewPlayedHand([]Card {
-        tenOfDiamonds,
-        tenOfClubs,
-        tenOfSpades,
-        threeOfClubs,
-        fourOfHearts,
-    })
+	assertValidHand(assert, hand, err, fullHouse, "10D, 10C, 10S, 3C, 3S")
 
-    assert.NotNil(err)
-    // TODO wrap around straights?
+	_, err = NewPlayedHand([]Card{
+		tenOfDiamonds,
+		tenOfClubs,
+		tenOfSpades,
+		threeOfClubs,
+		fourOfHearts,
+	})
+
+	assert.NotNil(err)
+	// TODO wrap around straights?
 }
 
 func TestNewPlayedHandFourOfAKind(t *testing.T) {
-    assert := assert.New(t)
-    hand, err := NewPlayedHand([]Card {
-        tenOfDiamonds,
-        tenOfClubs,
-        tenOfSpades,
-        tenOfHearts,
-        threeOfSpades,
-    })
+	assert := assert.New(t)
+	hand, err := NewPlayedHand([]Card{
+		tenOfDiamonds,
+		tenOfClubs,
+		tenOfSpades,
+		tenOfHearts,
+		threeOfSpades,
+	})
 
-    assertValidHand(assert, hand, err, fourOfAKind, "10D, 10C, 10S, 10H, 3S")
-    
-    _, err = NewPlayedHand([]Card {
-        tenOfDiamonds,
-        tenOfClubs,
-        tenOfSpades,
-        threeOfClubs,
-        fourOfHearts,
-    })
+	assertValidHand(assert, hand, err, fourOfAKind, "10D, 10C, 10S, 10H, 3S")
 
-    assert.NotNil(err)
-    // TODO wrap around straights?
+	_, err = NewPlayedHand([]Card{
+		tenOfDiamonds,
+		tenOfClubs,
+		tenOfSpades,
+		threeOfClubs,
+		fourOfHearts,
+	})
+
+	assert.NotNil(err)
+	// TODO wrap around straights?
 }
 
 func TestNewPlayedHandStraightFlush(t *testing.T) {
-    assert := assert.New(t)
-    hand, err := NewPlayedHand([]Card {
-        sevenOfClubs,
-        fourOfClubs,
-        fiveOfClubs,
-        threeOfClubs,
-        sixOfClubs,
-    })
+	assert := assert.New(t)
+	hand, err := NewPlayedHand([]Card{
+		sevenOfClubs,
+		fourOfClubs,
+		fiveOfClubs,
+		threeOfClubs,
+		sixOfClubs,
+	})
 
-    assertValidHand(assert, hand, err, straightFlush, "7C, 4C, 5C, 3C, 6C")
+	assertValidHand(assert, hand, err, straightFlush, "7C, 4C, 5C, 3C, 6C")
 }
- 
+
 func TestStraightBeats(t *testing.T) {
-    assert := assert.New(t)
-    lowStraight, _ := NewPlayedHand([]Card {
-        sevenOfClubs,
-        fourOfHearts,
-        fiveOfClubs,
-        threeOfClubs,
-        sixOfClubs,
-    })
+	assert := assert.New(t)
+	lowStraight, _ := NewPlayedHand([]Card{
+		sevenOfClubs,
+		fourOfHearts,
+		fiveOfClubs,
+		threeOfClubs,
+		sixOfClubs,
+	})
 
-    highStraight, _ := NewPlayedHand([]Card {
-        sevenOfClubs,
-        fourOfHearts,
-        fiveOfClubs,
-        sixOfClubs,
-        eightOfSpades,
-    })
+	highStraight, _ := NewPlayedHand([]Card{
+		sevenOfClubs,
+		fourOfHearts,
+		fiveOfClubs,
+		sixOfClubs,
+		eightOfSpades,
+	})
 
-    beats, err := highStraight.Beats(lowStraight)
-    assert.Nil(err)
-    assert.True(beats)
+	beats, err := highStraight.Beats(lowStraight)
+	assert.Nil(err)
+	assert.True(beats)
 
-    beats, err = lowStraight.Beats(highStraight)
-    assert.Nil(err)
-    assert.False(beats)
+	beats, err = lowStraight.Beats(highStraight)
+	assert.Nil(err)
+	assert.False(beats)
 }

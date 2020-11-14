@@ -1,21 +1,21 @@
 package app
 
 import (
-    //"log"
-    "encoding/json"
-    "github.com/MGC3/bigtwo/backend/app/game"
+	//"log"
+	"encoding/json"
+	"github.com/MGC3/bigtwo/backend/app/game"
 )
 
 // This type defines the outer message type, which contains
 // a string that identifies what kind of message is stored
 // as bytes in data
 type Message struct {
-    // -1 for server?
-    PlayerId playerId 
-    Type string `json:"type"`
+	// -1 for server?
+	PlayerId playerId
+	Type     string `json:"type"`
 
-    // or maybe this should be a string?
-    Data json.RawMessage `json:"data"`
+	// or maybe this should be a string?
+	Data json.RawMessage `json:"data"`
 }
 
 //
@@ -24,20 +24,20 @@ type Message struct {
 
 // Type == "send_data_name"
 type SendDisplayNameData struct {
-    Name string `json:"name"`
+	Name string `json:"name"`
 }
 
 // Type == "join_room"
 type JoinRoomData struct {
-    Room roomId `json:"room"`
+	Room roomId `json:"room"`
 
-    // player's name?
-    Name string `json:"name"`
+	// player's name?
+	Name string `json:"name"`
 }
 
 // Type == "play_move"
 type PlayMoveData struct {
-    Cards []game.Card `json:"cards"`
+	Cards []game.Card `json:"cards"`
 }
 
 //
@@ -46,10 +46,10 @@ type PlayMoveData struct {
 
 // Type == "error"
 type ErrorData struct {
-    Reason string `json:"reason"`
+	Reason string `json:"reason"`
 }
 
 // Type == "room_created"
 type RoomCreatedData struct {
-    RoomId roomId `json:"room_id"`
+	RoomId roomId `json:"room_id"`
 }
