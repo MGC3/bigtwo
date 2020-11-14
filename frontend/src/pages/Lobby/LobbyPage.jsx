@@ -1,10 +1,21 @@
-import React from 'react';
-import Lobby from '../../components/Lobby';
+import React, { useState, useEffect } from "react";
 
-export const LobbyPage = (props) => {
+export const LobbyPage = ({
+  match: {
+    params: { roomId },
+  },
+}) => {
+  const [roomCode, setRoomCode] = useState("");
+
+  useEffect(() => {
+    roomId ? setRoomCode(roomId) : setRoomCode("error");
+  }, []);
+
   return (
     <div className="app-container">
-      <Lobby {...props} />
+      <div>
+        <h1>Room id is: {roomCode}</h1>
+      </div>
     </div>
   );
 };
