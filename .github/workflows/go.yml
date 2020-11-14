@@ -30,7 +30,7 @@ jobs:
         fi
 
     - name: Build
-      run: make build
+      run: cd backend && make build
 
     - name: Test
-      run: make test
+      run: cd backend && make test
