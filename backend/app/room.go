@@ -25,7 +25,7 @@ type room struct {
     id roomId
     state roomState
     players []player
-    receive chan int
+    receive chan Message 
 }
 
 type WaitingArea struct {
@@ -53,6 +53,10 @@ func (w *WaitingArea) Serve() {
             log.Println("got join room")
         case "disconnect":
             log.Printf("Player %d disconnected\n", msg.PlayerId)
+            p := w.ConnectedPlayersNotInRoom[msg.PlayerId]
+            p.toPlayer <- msg
+            delete(w.ConnectedPlayersNotInRoom, p.id)
+            log.Printf("connected players %v", w.ConnectedPlayersNotInRoom)
         default:
             log.Printf("error -- unhandled message type %s\n", msg.Type)
             return

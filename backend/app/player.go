@@ -89,6 +89,11 @@ func (p *player) sendThread() {
             return
         }
 
+        if msg.Type == "disconnect" {
+            log.Printf("SendThread for player %d got dc message. Exiting", p.id)
+            return
+        }
+
         w, err := p.conn.NextWriter(websocket.TextMessage)
         if err != nil {
             log.Printf("sendThread failed to get writer %v", err)
