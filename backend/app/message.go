@@ -2,7 +2,7 @@ package app
 
 import (
     //"log"
-
+    "encoding/json"
     "github.com/MGC3/bigtwo/backend/app/game"
 )
 
@@ -15,7 +15,7 @@ type Message struct {
     Type string `json:"type"`
 
     // or maybe this should be a string?
-    Data []byte `json:"data"`
+    Data json.RawMessage `json:"data"`
 }
 
 //
@@ -29,7 +29,7 @@ type SendDisplayNameData struct {
 
 // Type == "join_room"
 type JoinRoomData struct {
-    Room string `json:"room"`
+    Room roomId `json:"room"`
 
     // player's name?
     Name string `json:"name"`
@@ -51,5 +51,5 @@ type ErrorData struct {
 
 // Type == "room_created"
 type RoomCreatedData struct {
-    RoomId string `json:"room_id"`
+    RoomId roomId `json:"room_id"`
 }

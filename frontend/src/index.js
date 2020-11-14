@@ -5,6 +5,9 @@ import { Routes } from "./routes/router";
 import { Layout } from "./layout";
 
 let socket = new WebSocket("ws://localhost:8000");
+socket.onmessage = function(event) {
+    console.log("Socket got, ", event)
+}
 
 const App = () => {
   return (

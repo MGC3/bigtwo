@@ -1,6 +1,7 @@
 package app
 
 import (
+    "encoding/json"
     "log"
 //    "sync"
     "github.com/gorilla/websocket"
@@ -10,20 +11,12 @@ const (
     maxNumPlayersInRoom = 4
 )
 
-type roomState int
-const (
-    waitingForPlayers roomState = iota
-    inGame
-    gameOver
-)
-
 type roomId string
 
 // Represents a single room.
 // A room can have 0 to maxNumPlayersinRoom players.
 type room struct {
     id roomId
-    state roomState
     players []player
     receive chan Message 
 }
@@ -47,10 +40,29 @@ func (w *WaitingArea) Serve() {
         case "send_display_name":
             log.Println("got display name")
         case "create_room":
-            log.Println("got create room")
+            newRoomId := w.CreateNewRoom()
+            log.Printf("created new room %s\n", newRoomId)
+            p := w.ConnectedPlayersNotInRoom[msg.PlayerId]
+
+            // TODO make this nicer
+            msgData, _ := json.Marshal(RoomCreatedData{
+                RoomId: newRoomId,
+            });
+            msg := Message {{}
+                PlayerId: msg.PlayerId,
+                Type: "room_created",
+                Data: json.RawMessage(msgData),
+            };
+            p.toPlayer <- msg
         case "join_room":
             // Assumes room exists, sends error if no room exists
-            log.Println("got join room")
+            var nested JoinRoomData
+            err := json.Unmarshal(msg.Data, &nested)
+            if err != nil {
+                log.Printf("Could not unmarshal nested packet %v", err)
+                continue
+            }
+            log.Printf("got join room %s from player %s\n", nested.Room, nested.Name)
         case "disconnect":
             log.Printf("Player %d disconnected\n", msg.PlayerId)
             p := w.ConnectedPlayersNotInRoom[msg.PlayerId]
@@ -62,6 +74,17 @@ func (w *WaitingArea) Serve() {
             return
         }
     }
+}
+
+func (w *WaitingArea) CreateNewRoom() roomId {
+    r := room {
+        id: "ABCD",
+        players: []player{},
+        receive: make(chan Message),
+    }
+
+    w.WaitingForPlayers[r.id] = r
+    return r.id
 }
 
 func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {

@@ -12,18 +12,31 @@ export const LandingPage = ({ history, socket }) => {
   const [socketTest, setSocketTest] = useState(socket);
 
   const handleCreateGame = (e) => {
+    console.log("Creating game");
+    socketTest.send(JSON.stringify({
+      type: "create_room",
+    }));
+    /* 
     createGame()
       .then((res) => {
         let roomId = res.data.RoomId;
         handleJoinRoom(e, roomId);
       })
       .catch((err) => console.log("Error creating game: ", err));
+    */
   };
 
   const handleJoinRoom = (e, roomId) => {
     e.preventDefault();
     // TODO: verify if the room id is valid. If not, show error and don't send the user to the lobby page
-    history.push("/room/" + roomId);
+    //history.push("/room/" + roomId);
+    socketTest.send(JSON.stringify({
+      type: "join_room",
+      data: {
+        room: "ABCD",
+        name: "testplayer",
+      }
+    }))
   };
 
   const handleTextFieldChange = (e) => {

@@ -7,6 +7,7 @@ Used https://github.com/gorilla/websocket/blob/master/examples/chat/client.go fo
 package app
 
 import (
+    "encoding/json"
     "log"
     "sync"
     "github.com/gorilla/websocket"
@@ -47,23 +48,31 @@ func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) player 
 func (p *player) receiveThread() {
     // TODO set connection parameters
     log.Println("receiveThread running")
+    var msg Message
     for {
-        _, msg, err := p.conn.ReadMessage()
+        _, bytes, err := p.conn.ReadMessage()
         if err != nil {
+            /*
             if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
                 log.Printf("receiveThread err %v", err)
             }
+            */
 
             // TODO signal to server that this user has disconnected
             log.Printf("receiveThread stopping")
             p.toServer <- Message {PlayerId: p.id, Type: "disconnect", Data: []byte{}}
             return
         }
+        log.Printf("ReceiveThread got %v from p %d\n", bytes, p.id)
         // TODO format message to have ID of sending player
+
+        if err := json.Unmarshal(bytes, &msg); err != nil {
+            log.Printf("receiveThread failed to unmarshal bc %v", err);
+            continue
+        }
         p.toServerLock.Lock()
         // TODO unmarshal msg into Message type
-        //p.toServer <- msg
-        log.Printf("%v", msg)
+        p.toServer <- msg
         p.toServerLock.Unlock()
     }
 }
@@ -94,14 +103,20 @@ func (p *player) sendThread() {
             return
         }
 
+        log.Printf("sendThread received message %v\n", msg)
+
         w, err := p.conn.NextWriter(websocket.TextMessage)
         if err != nil {
             log.Printf("sendThread failed to get writer %v", err)
             continue
         }
 
-        log.Printf("%v %v", w, msg)
         // TODO convert to bytes
-        //w.Write(msg)
+        bytes, err := json.Marshal(msg)
+        if err != nil {
+            log.Printf("Could not marshal msg to json %v", err)
+            continue
+        }
+        w.Write(bytes)
     }
 }
