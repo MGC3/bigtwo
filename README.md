@@ -1,2 +1,2 @@
 # bigtwo
-![WORKFLOW](https://github.com/MGC3/bigtwo/.github/workflows/go.yml/badge.svg)
+[![PRO BADGE Actions Status](https://github.com/MGC3/bigtwo/workflows/Build/badge.svg)](https://github.com/MGC3/bigtwo/actions)
