@@ -1,5 +1,15 @@
+/*
+
+Used https://github.com/gorilla/websocket/blob/master/examples/chat/client.go for reference.
+
+*/
+
+package app
+
 import (
+    "log"
     "sync"
+    "github.com/gorilla/websocket"
 )
 
 type playerId int
@@ -8,50 +18,85 @@ type player struct {
     id playerId 
     displayName string
     conn *websocket.Conn
-    doneChannel chan *sync.WaitGroup 
+    toPlayer chan Message
+
+    toServerLock sync.Mutex
+    toServer chan Message 
 }
 
-// todo define message type
-// todo do I need two goroutines per player connection? how many goroutines is too many
-func (p *player) receiveThread(toManagingThread chan wsMessage, fromManagingThread chan wsMessage) {
-    for {
-        // Read from connection with timeout
-        // on timeout, poll doneChannel and exit if there's anything there
-        // otherwise, process message from websocket
-        // then still poll the doneChannel so that we don't get stuck
-        // if the client keeps sending messages but the backend wants to stop this thread
-
-        // Outline below - feels very strange...
-        // Wait I need to handle messages to/from the managing thread too..
-        // maybe I do need another thread just to read and forward messages from conn to here?
-        
-        /*
-
-        go func() {
-            for {
-                // poll connection and send on channel
-                // but this thread needs to be closed too!!!
-                // I must be structuring this wrong...
-            }
-        }()
-
-        msg, err := p.conn.ReadJSON(timeout=0.1)
-        if err == nil {
-            messageChannel <- msg
-        } else if err != timeout {
-            // handle actual error
-        }
-
-        // poll doneChannel
-        select {
-        case wg <- p.doneChannel:
-            defer wg.Done()
-            return
-        default:
-            break
-        }
-        */
+// Factory func for creating a new player.
+// Players are not initialized with a display name -- defaults to empty string.
+func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) player {
+    p := player {
+        id: id,
+        displayName: "",
+        conn: conn,
+        toPlayer: make(chan Message),
+        toServerLock: sync.Mutex{},
+        toServer: toServer,
     }
 
+    go p.receiveThread()
+    go p.sendThread()
+
+    return p
 }
 
+// Thread for reading message from the websocket connection and sending them to the room
+// Just loops forever and forwards messages from conn to room.receiveChannel
+func (p *player) receiveThread() {
+    // TODO set connection parameters
+    log.Println("receiveThread running")
+    for {
+        _, msg, err := p.conn.ReadMessage()
+        if err != nil {
+            if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+                log.Printf("receiveThread err %v", err)
+            }
+
+            // TODO signal to server that this user has disconnected
+            log.Printf("receiveThread stopping")
+            p.toServer <- Message {PlayerId: p.id, Type: "disconnect", Data: []byte{}}
+            return
+        }
+        // TODO format message to have ID of sending player
+        p.toServerLock.Lock()
+        // TODO unmarshal msg into Message type
+        //p.toServer <- msg
+        log.Printf("%v", msg)
+        p.toServerLock.Unlock()
+    }
+}
+
+// Each player is going to be talking to different parts of the backend at different times
+// ie, player messages need to be handled differently when the player is not in a room vs
+// in a room waiting for players vs in game
+// This function lets the backend safely swap out the receive channel
+func (p *player) swapToServerChannel(newChannel chan Message)  {
+    p.toServerLock.Lock()
+    p.toServer = newChannel
+    p.toServerLock.Unlock()
+}
+
+// Thread for sending message from room to websocket connection
+func (p *player) sendThread() {
+    log.Println("sendThread running")
+    for {
+        msg, ok := <-p.toPlayer
+        // TODO signal that connection is over by closing channel? Better way to do this?
+        if !ok {
+            p.conn.WriteMessage(websocket.CloseMessage, []byte{})
+            return
+        }
+
+        w, err := p.conn.NextWriter(websocket.TextMessage)
+        if err != nil {
+            log.Printf("sendThread failed to get writer %v", err)
+            continue
+        }
+
+        log.Printf("%v %v", w, msg)
+        // TODO convert to bytes
+        //w.Write(msg)
+    }
+}

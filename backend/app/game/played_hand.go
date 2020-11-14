@@ -63,7 +63,7 @@ func NewPlayedHand(cards []Card) (PlayedHand, error) {
 
     // TODO do I need to handle straights that wrap around?
     // e.g., A2345
-    if len(rCounts) == 5 && (highCard.rank - lowCard.rank) == 4 {
+    if len(rCounts) == 5 && (highCard.Rank - lowCard.Rank) == 4 {
         if len(sCounts) == 1 {
             return newHandWithType(cards, straightFlush), nil
         }
@@ -75,7 +75,7 @@ func NewPlayedHand(cards []Card) (PlayedHand, error) {
     }
 
     if len(rCounts) == 2 {
-        if rCounts[cards[0].rank] == 1 || rCounts[cards[0].rank] == 4 {
+        if rCounts[cards[0].Rank] == 1 || rCounts[cards[0].Rank] == 4 {
             return newHandWithType(cards, fourOfAKind), nil
         }
         return newHandWithType(cards, fullHouse), nil
@@ -116,8 +116,8 @@ func (lhs PlayedHand) Beats(rhs PlayedHand) (bool, error) {
     // Here, flushes are ranked by suit (C < S < H < D). Ties are broken by
     // highest card.
     if lhs.Type == flush {
-        lhsSuit := lhs.Cards[0].suit
-        rhsSuit := rhs.Cards[0].suit
+        lhsSuit := lhs.Cards[0].Suit
+        rhsSuit := rhs.Cards[0].Suit
         if lhsSuit == rhsSuit {
             return highCard(lhs.Cards).GreaterThan(highCard(rhs.Cards)), nil
         }
@@ -152,8 +152,8 @@ func newHandWithType(cards []Card, t handType) PlayedHand {
     }
 
     for i, c := range cards {
-        ret.Cards[i].rank = c.rank
-        ret.Cards[i].suit = c.suit
+        ret.Cards[i].Rank = c.Rank
+        ret.Cards[i].Suit = c.Suit
     }
 
     return ret
@@ -162,10 +162,10 @@ func newHandWithType(cards []Card, t handType) PlayedHand {
 func rankCounts(cards []Card) map[int]int {
     ret := make(map[int]int)
     for _, card := range cards {
-        if _, ok := ret[card.rank]; ok {
-            ret[card.rank] += 1
+        if _, ok := ret[card.Rank]; ok {
+            ret[card.Rank] += 1
         } else {
-            ret[card.rank] = 1
+            ret[card.Rank] = 1
         }
     } 
     return ret
@@ -174,10 +174,10 @@ func rankCounts(cards []Card) map[int]int {
 func suitCounts(cards []Card) map[int]int {
     ret := make(map[int]int)
     for _, card := range cards {
-        if _, ok := ret[card.suit]; ok {
-            ret[card.suit] += 1
+        if _, ok := ret[card.Suit]; ok {
+            ret[card.Suit] += 1
         } else {
-            ret[card.suit] = 1
+            ret[card.Suit] = 1
         }
     } 
     return ret
@@ -205,7 +205,7 @@ func highCard(cards []Card) Card {
             highest = card
         }
     }
-    return Card{rank: highest.rank, suit: highest.suit}
+    return Card{Rank: highest.Rank, Suit: highest.Suit}
 }
 
 func lowCard(cards []Card) Card {
@@ -215,5 +215,5 @@ func lowCard(cards []Card) Card {
             lowest = card
         }
     }
-    return Card{rank: lowest.rank, suit: lowest.suit}
+    return Card{Rank: lowest.Rank, Suit: lowest.Suit}
 }

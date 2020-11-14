@@ -8,10 +8,9 @@ import (
 var rankStrings = [...]string {"3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A", "2"}
 var suitStrings = [...]string {"C", "S", "H", "D"}
 
-// Cards use characters to represent 
 type Card struct {
-    rank int 
-    suit int 
+    Rank int `json:"rank"`
+    Suit int `json:"suit"`
 }
 
 //
@@ -38,11 +37,11 @@ func NewCard(rank string, suit string) (Card, error) {
 // Returns true if c > other, false otherwise
 // Assumes both c and other are valid cards
 func (lhs Card) GreaterThan(rhs Card) bool {
-    if lhs.rank == rhs.rank {
-        return lhs.suit > rhs.suit
+    if lhs.Rank == rhs.Rank {
+        return lhs.Suit > rhs.Suit
     }
 
-    return lhs.rank > rhs.rank
+    return lhs.Rank > rhs.Rank
 }
 
 func (c Card) ToString() string {
@@ -50,7 +49,7 @@ func (c Card) ToString() string {
         return "Invalid card"
     }
 
-    return rankStrings[c.rank] + suitStrings[c.suit]
+    return rankStrings[c.Rank] + suitStrings[c.Suit]
 }
 
 //
@@ -79,5 +78,5 @@ func invalidCard() Card {
 }
 
 func (c Card) isValid() bool {
-    return c.rank >= 0 && c.rank < len(rankStrings) && c.suit >= 0 && c.suit < len(suitStrings)
+    return c.Rank >= 0 && c.Rank < len(rankStrings) && c.Suit >= 0 && c.Suit < len(suitStrings)
 }

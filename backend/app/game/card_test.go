@@ -5,28 +5,28 @@ import "testing"
 
 func TestNewCard(t *testing.T) {
     c, e := NewCard("3", "C")
-    if e != nil || c.rank != 0 || c.suit != 0 {
+    if e != nil || c.Rank != 0 || c.Suit != 0 {
         t.Errorf("Failed to make 3C from string")
     }
 
     c, e = NewCard("2", "D")
-    if e != nil || c.rank != 12 || c.suit != 3 {
+    if e != nil || c.Rank != 12 || c.Suit != 3 {
         t.Errorf("Failed to make 2D from string")
     }
 
     c, e = NewCard("10", "H")
-    if e != nil || c.rank != 7 || c.suit != 2 {
+    if e != nil || c.Rank != 7 || c.Suit != 2 {
         t.Errorf("Failed to make 10H from string")
     }
 
     c, e = NewCard("H", "D")
-    if e == nil || c.rank != -1 || c.suit != -1 {
-        t.Errorf("Didn't error out on invalid rank")
+    if e == nil || c.Rank != -1 || c.Suit != -1 {
+        t.Errorf("Didn't error out on invalid Rank")
     }
 
     c, e = NewCard("J", "B")
-    if e == nil || c.rank != -1 || c.suit != -1 {
-        t.Errorf("Didn't error out on invalid suit")
+    if e == nil || c.Rank != -1 || c.Suit != -1 {
+        t.Errorf("Didn't error out on invalid Suit")
     }
 }
 
