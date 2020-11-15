@@ -1,51 +1,39 @@
-import React, { Component } from "react";
+import React from "react";
 import styled from "styled-components";
 import { GiDiamonds, GiHearts, GiSpades, GiClubs } from "react-icons/gi";
 
-export class Card extends Component {
-  constructor(props) {
-    super(props);
+export const Card = ({ data, selected, handleCardSelect }) => {
+  const iconMaker = (suit) => {
+    switch (suit) {
+      case "D":
+        return <GiDiamonds color={"red"} />;
+      case "H":
+        return <GiHearts color={"red"} />;
+      case "S":
+        return <GiSpades color={"black"} />;
+      case "C":
+        return <GiClubs color={"black"} />;
+      default:
+        return "something bad happened";
+    }
+  };
 
-    this.state = {
-      data: this.props.data,
-    };
-  }
+  const icon = iconMaker(data.suit);
+  const rank = data.rank;
 
-  render() {
-    const iconMaker = (suit) => {
-      switch (suit) {
-        case "D":
-          return <GiDiamonds color={"red"} />;
-        case "H":
-          return <GiHearts color={"red"} />;
-        case "S":
-          return <GiSpades color={"black"} />;
-        case "C":
-          return <GiClubs color={"black"} />;
-        default:
-          return "something bad happened";
-      }
-    };
-
-    const icon = iconMaker(this.state.data.suit);
-
-    return (
-      <CardContainer
-        isSelected={this.props.selected}
-        onClick={() => this.props.handleCardSelect(this.state.data)}
-      >
-        <Upper>
-          <div>{this.state.data.rank}</div>
-          <div>{icon}</div>
-        </Upper>
-        <Lower>
-          <div>{this.state.data.rank}</div>
-          <div>{icon}</div>
-        </Lower>
-      </CardContainer>
-    );
-  }
-}
+  return (
+    <CardContainer isSelected={selected} onClick={() => handleCardSelect(data)}>
+      <Upper>
+        <div>{rank}</div>
+        <div>{icon}</div>
+      </Upper>
+      <Lower>
+        <div>{rank}</div>
+        <div>{icon}</div>
+      </Lower>
+    </CardContainer>
+  );
+};
 
 const CardContainer = styled.div`
   height: 210px;

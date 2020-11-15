@@ -1,75 +1,60 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Card } from "../Card/Card";
 
-export class Hand extends Component {
-  constructor(props) {
-    super(props);
+export const Hand = ({ cards }) => {
+  const [selectedCards, setSelectedCards] = useState([]);
 
-    this.state = {
-      cards: this.props.cards,
-      selectedCards: [],
-    };
-  }
-
-  handleCardSelect = (card) => {
+  const handleCardSelect = (card) => {
     // deselect the card if it's already been selected
-    if (this.state.selectedCards.includes(card)) {
-      let updatedCards = [...this.state.selectedCards].filter(
-        (d) => d !== card
-      );
-      this.setState({
-        selectedCards: updatedCards,
-      });
+    if (selectedCards.includes(card)) {
+      let updatedCards = [...selectedCards].filter((d) => d !== card);
+      setSelectedCards(updatedCards);
     } else {
       // don't allow the user to select more than 5 cards at a time
-      if (this.state.selectedCards.length > 4) {
+      if (selectedCards.length > 4) {
         return;
       }
       // add the card to the selectedCards array
-      let updatedCards = [...this.state.selectedCards];
+      let updatedCards = [...selectedCards];
       updatedCards.push(card);
-      this.setState({
-        selectedCards: updatedCards,
-      });
+      setSelectedCards(updatedCards);
     }
   };
 
-  isCardSelected = (card) => {
-    return this.state.selectedCards.includes(card) ? true : false;
+  const isCardSelected = (card) => {
+    return selectedCards.includes(card) ? true : false;
   };
 
-  render() {
-    return (
-      <>
-        {/* TODO: debugging code, remove later vvvvvvvvv*/}
-        <h1 style={{ marginBottom: "64px" }}>
-          SelectedCards state is:
-          {this.state.selectedCards.length > 0 &&
-            this.state.selectedCards.map((card) => (
-              <span>
-                {card.rank} of {card.suit},{" "}
-              </span>
-            ))}
-          {this.state.selectedCards.length === 0 && "None Selected"}
-        </h1>
-        {/* TODO: debugging code, remove later ^^^^^^^^^*/}
-        <HandContainer>
-          {this.state.cards.map((card, i) => {
-            return (
-              <Card
-                key={card.rank + card.suit}
-                data={card}
-                handleCardSelect={this.handleCardSelect}
-                selected={this.isCardSelected(card)}
-              />
-            );
-          })}
-        </HandContainer>
-      </>
-    );
-  }
-}
+  return (
+    <>
+      {/* TODO: debugging code, remove later vvvvvvvvv*/}
+      <h1 style={{ marginBottom: "64px" }}>
+        SelectedCards state is:
+        {selectedCards.length > 0 &&
+          selectedCards.map((card) => (
+            <span>
+              {card.rank} of {card.suit},{" "}
+            </span>
+          ))}
+        {selectedCards.length === 0 && "None Selected"}
+      </h1>
+      {/* TODO: debugging code, remove later ^^^^^^^^^*/}
+      <HandContainer>
+        {cards.map((card, i) => {
+          return (
+            <Card
+              key={card.rank + card.suit}
+              data={card}
+              handleCardSelect={handleCardSelect}
+              selected={isCardSelected(card)}
+            />
+          );
+        })}
+      </HandContainer>
+    </>
+  );
+};
 
 const HandContainer = styled.div`
   display: flex;
