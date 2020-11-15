@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { createGame } from "../../api/game";
+import { PageWrapper } from "../../components/PageWrapper";
 import { Hand } from "../../components/Hand";
 import { Button } from "../../components/Button/Button";
 import TextField from "@material-ui/core/TextField";
-import "../../css/app.css";
-import "../../css/landing.css";
 import { mockCardsData } from "../../api/testData";
 
 export const LandingPage = ({ history, socket }) => {
@@ -13,9 +12,11 @@ export const LandingPage = ({ history, socket }) => {
 
   const handleCreateGame = (e) => {
     console.log("Creating game");
-    socketTest.send(JSON.stringify({
-      type: "create_room",
-    }));
+    socketTest.send(
+      JSON.stringify({
+        type: "create_room",
+      })
+    );
     /* 
     createGame()
       .then((res) => {
@@ -30,13 +31,15 @@ export const LandingPage = ({ history, socket }) => {
     e.preventDefault();
     // TODO: verify if the room id is valid. If not, show error and don't send the user to the lobby page
     //history.push("/room/" + roomId);
-    socketTest.send(JSON.stringify({
-      type: "join_room",
-      data: {
-        room: "ABCD",
-        name: "testplayer",
-      }
-    }))
+    socketTest.send(
+      JSON.stringify({
+        type: "join_room",
+        data: {
+          room: "ABCD",
+          name: "testplayer",
+        },
+      })
+    );
   };
 
   const handleTextFieldChange = (e) => {
@@ -44,11 +47,10 @@ export const LandingPage = ({ history, socket }) => {
   };
 
   return (
-    <div className="app-container">
-      <h1 className="title">Big Two</h1>
+    <PageWrapper>
       <Button onClick={(e) => handleCreateGame(e)} text="Create New Game" />
       <div>OR </div>
-      <form className="landing-form">
+      <form>
         <TextField
           id="outlined-basic"
           label="Enter room code"
@@ -62,6 +64,6 @@ export const LandingPage = ({ history, socket }) => {
         />
       </form>
       <Hand cards={mockCardsData} />
-    </div>
+    </PageWrapper>
   );
 };

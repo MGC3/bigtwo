@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Card } from "./Card";
-import "../css/hand.css";
+import styled from "styled-components";
+import { Card } from "../Card/Card";
 
 export class Hand extends Component {
   constructor(props) {
@@ -54,7 +54,7 @@ export class Hand extends Component {
           {this.state.selectedCards.length === 0 && "None Selected"}
         </h1>
         {/* TODO: debugging code, remove later ^^^^^^^^^*/}
-        <div className="hand-container">
+        <HandContainer>
           {this.state.cards.map((card, i) => {
             return (
               <Card
@@ -65,8 +65,12 @@ export class Hand extends Component {
               />
             );
           })}
-        </div>
+        </HandContainer>
       </>
     );
   }
 }
+
+const HandContainer = styled.div`
+  display: flex;
+`;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { PageWrapper } from "../../components/PageWrapper";
 
 export const LobbyPage = ({
   match: {
@@ -12,10 +13,10 @@ export const LobbyPage = ({
   }, []);
 
   return (
-    <div className="app-container">
+    <PageWrapper>
       <div>
         <h1>Room id is: {roomCode}</h1>
       </div>
-    </div>
+    </PageWrapper>
   );
 };

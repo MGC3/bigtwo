@@ -3,11 +3,12 @@ import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 import { Routes } from "./routes/router";
 import { Layout } from "./layout";
+import "./shared/styles/global.css";
 
 let socket = new WebSocket("ws://localhost:8000");
-socket.onmessage = function(event) {
-    console.log("Socket got, ", event)
-}
+socket.onmessage = function (event) {
+  console.log("Socket got, ", event);
+};
 
 const App = () => {
   return (
