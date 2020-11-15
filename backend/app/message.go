@@ -10,11 +10,10 @@ import (
 // a string that identifies what kind of message is stored
 // as bytes in data
 type Message struct {
-	// -1 for server?
-	PlayerId playerId
-	Type     string `json:"type"`
+	PlayerId playerId `json:"-"`
+	Type     string   `json:"type"`
 
-	// or maybe this should be a string?
+	// TODO omit empty?
 	Data json.RawMessage `json:"data"`
 }
 
@@ -52,4 +51,22 @@ type ErrorData struct {
 // Type == "room_created"
 type RoomCreatedData struct {
 	RoomId roomId `json:"room_id"`
+}
+
+type EmptyData struct {
+}
+
+func NewMessage(id playerId, messageType string, data interface{}) (Message, error) {
+	packedData, err := json.Marshal(data)
+	if err != nil {
+		return Message{}, nil
+	}
+
+	m := Message{
+		PlayerId: id,
+		Type:     messageType,
+		Data:     json.RawMessage(packedData),
+	}
+
+	return m, nil
 }

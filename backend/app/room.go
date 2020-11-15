@@ -28,6 +28,8 @@ type WaitingArea struct {
 	ConnectedPlayersNotInRoom map[playerId]player
 	nextId                    playerId
 	receive                   chan Message
+
+	messageHandlers map[string]func(*WaitingArea, Message)
 }
 
 // Serves connected players not in a room.
@@ -35,49 +37,21 @@ type WaitingArea struct {
 func (w *WaitingArea) Serve() {
 	log.Println("WaitingArea serving...")
 	for {
-		msg := <-w.receive
-		switch msg.Type {
-		case "send_display_name":
-			log.Println("got display name")
-		case "create_room":
-			newRoomId := w.CreateNewRoom()
-			log.Printf("created new room %s\n", newRoomId)
-			p := w.ConnectedPlayersNotInRoom[msg.PlayerId]
+		receive := <-w.receive
+		handler, ok := w.messageHandlers[receive.Type]
 
-			// TODO make this nicer
-			msgData, _ := json.Marshal(RoomCreatedData{
-				RoomId: newRoomId,
-			})
-			msg := Message{
-				PlayerId: msg.PlayerId,
-				Type:     "room_created",
-				Data:     json.RawMessage(msgData),
-			}
-			p.toPlayer <- msg
-		case "join_room":
-			// Assumes room exists, sends error if no room exists
-			var nested JoinRoomData
-			err := json.Unmarshal(msg.Data, &nested)
-			if err != nil {
-				log.Printf("Could not unmarshal nested packet %v", err)
-				continue
-			}
-			log.Printf("got join room %s from player %s\n", nested.Room, nested.Name)
-		case "disconnect":
-			log.Printf("Player %d disconnected\n", msg.PlayerId)
-			p := w.ConnectedPlayersNotInRoom[msg.PlayerId]
-			p.toPlayer <- msg
-			delete(w.ConnectedPlayersNotInRoom, p.id)
-			log.Printf("connected players %v", w.ConnectedPlayersNotInRoom)
-		default:
-			log.Printf("error -- unhandled message type %s\n", msg.Type)
-			return
+		if !ok {
+			log.Printf("Unhandled message type %s\n", receive.Type)
+			continue
 		}
+
+		handler(w, receive)
 	}
 }
 
 func (w *WaitingArea) CreateNewRoom() roomId {
 	r := room{
+		// TODO generate real random-ish string
 		id:      "ABCD",
 		players: []player{},
 		receive: make(chan Message),
@@ -98,12 +72,64 @@ func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {
 	w.ConnectedPlayersNotInRoom[p.id] = p
 }
 
+func handleCreateRoom(w *WaitingArea, receive Message) {
+	newRoomId := w.CreateNewRoom()
+	log.Printf("created new room %s\n", newRoomId)
+	p, ok := w.ConnectedPlayersNotInRoom[receive.PlayerId]
+
+	if !ok {
+		log.Printf("Could not find player %s\n", receive.PlayerId)
+		return
+	}
+
+	send, err := NewMessage(receive.PlayerId, "room_created", RoomCreatedData{RoomId: newRoomId})
+	if err != nil {
+		log.Printf("Error creating message %v\n", err)
+		return
+	}
+	p.toPlayer <- send
+}
+
+func handleJoinRoom(w *WaitingArea, receive Message) {
+	// Assumes room exists, sends error if no room exists
+	var nested JoinRoomData
+	err := json.Unmarshal(receive.Data, &nested)
+	if err != nil {
+		log.Printf("Could not unmarshal nested packet %v", err)
+		return
+	}
+	log.Printf("got join room %s from player %s\n", nested.Room, nested.Name)
+	p, ok := w.ConnectedPlayersNotInRoom[receive.PlayerId]
+
+	if !ok {
+		log.Printf("failed to join room because %v not found\n", p)
+		return
+	}
+}
+
+func handleDisconnect(w *WaitingArea, receive Message) {
+	log.Printf("Player %d disconnected\n", receive.PlayerId)
+
+	// Forward disconnect message to send thread
+	w.ConnectedPlayersNotInRoom[receive.PlayerId].toPlayer <- receive
+	delete(w.ConnectedPlayersNotInRoom, receive.PlayerId)
+
+	log.Printf("connected players %v", w.ConnectedPlayersNotInRoom)
+}
+
 func NewWaitingArea() WaitingArea {
-	return WaitingArea{
+	w := WaitingArea{
 		WaitingForPlayers:         make(map[roomId]room),
 		InGame:                    make(map[roomId]room),
 		ConnectedPlayersNotInRoom: make(map[playerId]player),
 		nextId:                    0,
 		receive:                   make(chan Message),
+		messageHandlers:           make(map[string]func(*WaitingArea, Message)),
 	}
+
+	w.messageHandlers["create_room"] = handleCreateRoom
+	w.messageHandlers["join_room"] = handleJoinRoom
+	w.messageHandlers["disconnect"] = handleDisconnect
+
+	return w
 }
