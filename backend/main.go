@@ -33,6 +33,7 @@ func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO can I convert this to use channels? It would be nice to get rid of the locks.
 	bigLock.Lock()
 	defer bigLock.Unlock()
 	waitingArea.AddNewConnectedPlayer(conn)

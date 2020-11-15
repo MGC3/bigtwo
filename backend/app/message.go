@@ -14,7 +14,10 @@ type Message struct {
 	Type     string   `json:"type"`
 
 	// TODO omit empty?
+	// TODO can this be an empty interface? It might be nice to have nested
+	// messages passed around internally that don't need to be marshalled/unmarshalled
 	Data json.RawMessage `json:"data"`
+	//Data interface{} `json:"data"`
 }
 
 //
