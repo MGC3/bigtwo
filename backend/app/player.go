@@ -105,20 +105,11 @@ func (p *player) sendThread() {
 			return
 		}
 
-		log.Printf("sendThread received message %v\n", msg)
-
-		w, err := p.conn.NextWriter(websocket.TextMessage)
+		err := p.conn.WriteJSON(msg)
 		if err != nil {
-			log.Printf("sendThread failed to get writer %v", err)
-			continue
+			log.Printf("sendThread write failed %v\n", err)
+		} else {
+			log.Printf("sendThread wrote message %v bytes\n", msg)
 		}
-
-		// TODO convert to bytes
-		bytes, err := json.Marshal(msg)
-		if err != nil {
-			log.Printf("Could not marshal msg to json %v", err)
-			continue
-		}
-		w.Write(bytes)
 	}
 }

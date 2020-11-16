@@ -72,6 +72,8 @@ func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {
 	w.ConnectedPlayersNotInRoom[p.id] = p
 }
 
+var createRoomCount int = 0
+
 func handleCreateRoom(w *WaitingArea, receive Message) {
 	newRoomId := w.CreateNewRoom()
 	log.Printf("created new room %s\n", newRoomId)
@@ -82,7 +84,8 @@ func handleCreateRoom(w *WaitingArea, receive Message) {
 		return
 	}
 
-	send, err := NewMessage(receive.PlayerId, "room_created", RoomCreatedData{RoomId: newRoomId})
+	send, err := NewMessage(receive.PlayerId, "room_created", RoomCreatedData{RoomId: newRoomId, Count: createRoomCount})
+	createRoomCount += 1
 	if err != nil {
 		log.Printf("Error creating message %v\n", err)
 		return
