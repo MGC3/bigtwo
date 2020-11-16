@@ -47,7 +47,7 @@ func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) player 
 // Just loops forever and forwards messages from conn to room.receiveChannel
 func (p *player) receiveThread() {
 	// TODO set connection parameters
-	log.Println("receiveThread running")
+	log.Printf("receiveThread running for player %d", p.id)
 	var msg Message
 	for {
 		_, bytes, err := p.conn.ReadMessage()
@@ -59,7 +59,7 @@ func (p *player) receiveThread() {
 			*/
 
 			// TODO signal to server that this user has disconnected
-			log.Printf("receiveThread stopping")
+			log.Printf("receiveThread stopping for player %d\n", p.id)
 			p.toServer <- Message{PlayerId: p.id, Type: "disconnect", Data: []byte{}}
 			return
 		}
@@ -70,6 +70,8 @@ func (p *player) receiveThread() {
 			log.Printf("receiveThread failed to unmarshal bc %v", err)
 			continue
 		}
+
+		msg.PlayerId = p.id
 		p.toServerLock.Lock()
 		// TODO unmarshal msg into Message type
 		p.toServer <- msg
@@ -89,7 +91,7 @@ func (p *player) swapToServerChannel(newChannel chan Message) {
 
 // Thread for sending message from room to websocket connection
 func (p *player) sendThread() {
-	log.Println("sendThread running")
+	log.Printf("sendThread running for player %d\n", p.id)
 	for {
 		msg, ok := <-p.toPlayer
 		// TODO signal that connection is over by closing channel? Better way to do this?
