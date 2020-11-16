@@ -26,8 +26,7 @@ const ButtonWrapper = styled.button`
   box-shadow: 4px 4px 0 0 black;
   transform: translate(0, 0);
   transition: all 0.2s ease;
-  margin: 0 24px 24px 0;
-
+  margin: 16px 0;
   &:hover {
     cursor: pointer;
   }

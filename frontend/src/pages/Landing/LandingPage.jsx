@@ -3,7 +3,7 @@ import { createGame } from "../../api/game";
 import { PageWrapper } from "../../components/PageWrapper";
 import { Hand } from "../../components/Hand";
 import { Button } from "../../components/Button/Button";
-import TextField from "@material-ui/core/TextField";
+import { TextField } from "@material-ui/core/";
 import { mockCardsData } from "../../api/testData";
 
 export const LandingPage = ({ history, socket }) => {
