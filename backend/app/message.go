@@ -31,7 +31,7 @@ type SendDisplayNameData struct {
 
 // Type == "join_room"
 type JoinRoomData struct {
-	Room roomId `json:"room"`
+	RoomId roomId `json:"room"`
 
 	// player's name?
 	Name string `json:"name"`

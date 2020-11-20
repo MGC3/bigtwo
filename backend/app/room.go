@@ -22,8 +22,8 @@ type room struct {
 }
 
 type WaitingArea struct {
-	WaitingForPlayers map[roomId]room
-	InGame            map[roomId]room
+	WaitingForPlayers map[roomId]*room
+	InGame            map[roomId]*room
 	// TODO lock needed?
 	ConnectedPlayersNotInRoom map[playerId]player
 	nextId                    playerId
@@ -57,7 +57,7 @@ func (w *WaitingArea) CreateNewRoom() roomId {
 		receive: make(chan Message),
 	}
 
-	w.WaitingForPlayers[r.id] = r
+	w.WaitingForPlayers[r.id] = &r
 	return r.id
 }
 
@@ -101,13 +101,31 @@ func handleJoinRoom(w *WaitingArea, receive Message) {
 		log.Printf("Could not unmarshal nested packet %v", err)
 		return
 	}
-	log.Printf("got join room %s from player %s\n", nested.Room, nested.Name)
-	p, ok := w.ConnectedPlayersNotInRoom[receive.PlayerId]
+	log.Printf("got join room %s from player %s\n", nested.RoomId, nested.Name)
+	player, ok := w.ConnectedPlayersNotInRoom[receive.PlayerId]
 
 	if !ok {
-		log.Printf("failed to join room because %v not found\n", p)
+		// TODO send error messages or something
+		log.Printf("failed to join room because player %d not found\n", receive.PlayerId)
 		return
 	}
+
+	room, ok := w.WaitingForPlayers[nested.RoomId]
+
+	if !ok {
+		log.Printf("failed to join room because room %d not found", nested.RoomId)
+		return
+	}
+
+	delete(w.ConnectedPlayersNotInRoom, receive.PlayerId)
+	room.players = append(room.players, player)
+
+	send, err := NewMessage(receive.PlayerId, "room_joined", EmptyData{})
+
+	// TODO swap out player channels
+	room = w.WaitingForPlayers[nested.RoomId]
+	log.Printf("Room state: %v\n", room)
+	player.toPlayer <- send
 }
 
 func handleDisconnect(w *WaitingArea, receive Message) {
@@ -122,8 +140,8 @@ func handleDisconnect(w *WaitingArea, receive Message) {
 
 func NewWaitingArea() WaitingArea {
 	w := WaitingArea{
-		WaitingForPlayers:         make(map[roomId]room),
-		InGame:                    make(map[roomId]room),
+		WaitingForPlayers:         make(map[roomId]*room),
+		InGame:                    make(map[roomId]*room),
 		ConnectedPlayersNotInRoom: make(map[playerId]player),
 		nextId:                    0,
 		receive:                   make(chan Message),
