@@ -54,7 +54,6 @@ type ErrorData struct {
 // Type == "room_created"
 type RoomCreatedData struct {
 	RoomId roomId `json:"room_id"`
-	Count  int    `json:"count"`
 }
 
 type EmptyData struct {

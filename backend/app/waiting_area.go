@@ -36,14 +36,8 @@ func (w *WaitingArea) Serve() {
 }
 
 func (w *WaitingArea) CreateNewRoom() roomId {
-	r := room{
-		// TODO generate real random-ish string
-		id:      "ABCD",
-		players: []player{},
-		receive: make(chan Message),
-	}
-
-	w.WaitingForPlayers[r.id] = &r
+	r := newRoom("ABCD")
+	w.WaitingForPlayers[r.id] = newRoom("ABCD")
 	return r.id
 }
 
@@ -58,8 +52,6 @@ func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {
 	w.ConnectedPlayersNotInRoom[p.id] = p
 }
 
-var createRoomCount int = 0
-
 func handleCreateRoom(w *WaitingArea, receive Message) {
 	newRoomId := w.CreateNewRoom()
 	log.Printf("created new room %s\n", newRoomId)
@@ -70,8 +62,7 @@ func handleCreateRoom(w *WaitingArea, receive Message) {
 		return
 	}
 
-	send, err := NewMessage(receive.PlayerId, "room_created", RoomCreatedData{RoomId: newRoomId, Count: createRoomCount})
-	createRoomCount += 1
+	send, err := NewMessage(receive.PlayerId, "room_created", RoomCreatedData{RoomId: newRoomId})
 	if err != nil {
 		log.Printf("Error creating message %v\n", err)
 		return

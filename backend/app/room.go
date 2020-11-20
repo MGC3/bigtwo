@@ -39,3 +39,23 @@ func (r *room) serve() {
 		handler(r, receive)
 	}
 }
+
+func roomHandleDisconnect(r *room, receive Message) {
+	// TODO delete (or invalidate?) player from array
+	for _, player := range r.players {
+		log.Printf("its a player %v\n", player)
+	}
+}
+
+func newRoom(id roomId) *room {
+	r := room{
+		// TODO generate real random-ish string
+		id:              "ABCD",
+		players:         []player{},
+		receive:         make(chan Message),
+		messageHandlers: make(map[string]func(*room, Message)),
+	}
+
+	r.messageHandlers["disconnect"] = roomHandleDisconnect
+	return &r
+}
