@@ -13,9 +13,9 @@ const ButtonWrapper = styled.button`
   border: none;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   height: 64px;
-  padding: 0 48px 0 40px;
+  padding: 0 32px;
   background-color: #fff;
   border-radius: 8px;
   font-weight: 700;

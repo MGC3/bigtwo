@@ -82,18 +82,27 @@ export const LandingPage = ({ history, socket }) => {
 
   return (
     <PageWrapper>
-      <Button
-        onClick={(e) => handleCreateGameClick(e)}
-        text="Create New Game"
-      />
-      <div>OR </div>
-      <form>
+      <form
+        style={{ maxWidth: "260px", display: "flex", flexDirection: "column" }}
+      >
+        <Button
+          onClick={(e) => handleCreateGameClick(e)}
+          text="Create New Game"
+        />
+        <div>OR </div>
         <TextField
           id="outlined-basic"
           label="Enter room code"
           value={roomId}
           onChange={handleTextFieldChange}
           fullWidth={true}
+          inputProps={{
+            style: {
+              fontSize: "40px",
+              textAlign: "center",
+            },
+            maxLength: 4,
+          }}
         />
         <Button
           onClick={(e) => handleJoinRoomClick(e, roomId)}
@@ -118,6 +127,9 @@ export const LandingPage = ({ history, socket }) => {
             fullWidth
             value={username}
             onChange={handleUsernameInputChange}
+            inputProps={{
+              style: { fontSize: "48px" },
+            }}
           />
         </DialogContent>
         <DialogActions>
