@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { PageWrapper } from "../../components/PageWrapper";
-import { Hand } from "../../components/Hand";
 import { Button } from "../../components/Button/Button";
 import {
   TextField,
@@ -9,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
 } from "@material-ui/core/";
-import { mockCardsData } from "../../api/testData";
 
 export const LandingPage = ({ history, socket }) => {
   const [roomId, setRoomId] = useState("");
@@ -136,7 +134,6 @@ export const LandingPage = ({ history, socket }) => {
           <Button onClick={joinRoom} text="Submit" />
         </DialogActions>
       </Dialog>
-      <Hand cards={mockCardsData} />
     </PageWrapper>
   );
 };
