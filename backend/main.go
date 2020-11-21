@@ -26,6 +26,8 @@ var bigLock = sync.Mutex{}
 
 // TODO only one GET request is serviced at a time
 func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
+	bigLock.Lock()
+	defer bigLock.Unlock()
 	fmt.Println("EstablishWebsocketConnection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -34,8 +36,6 @@ func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO can I convert this to use channels? It would be nice to get rid of the locks.
-	bigLock.Lock()
-	defer bigLock.Unlock()
 	waitingArea.AddNewConnectedPlayer(conn)
 	fmt.Println("Added new player to waiting area")
 }

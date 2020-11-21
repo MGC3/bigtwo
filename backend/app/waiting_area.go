@@ -11,11 +11,11 @@ type WaitingArea struct {
 	WaitingForPlayers map[roomId]*room
 	InGame            map[roomId]*room
 	// TODO lock needed?
-	ConnectedPlayersNotInRoom map[playerId]player
+	ConnectedPlayersNotInRoom map[playerId]*player
 	nextId                    playerId
 	receive                   chan Message
 
-	messageHandlers map[string]func(*WaitingArea, Message)
+	messageHandlers map[string]func(Message)
 }
 
 // Serves connected players not in a room.
@@ -31,7 +31,7 @@ func (w *WaitingArea) Serve() {
 			continue
 		}
 
-		handler(w, receive)
+		handler(receive)
 	}
 }
 
@@ -52,17 +52,17 @@ func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {
 	w.ConnectedPlayersNotInRoom[p.id] = p
 }
 
-func handleCreateRoom(w *WaitingArea, receive Message) {
+func (w *WaitingArea) handleCreateRoom(receive Message) {
 	newRoomId := w.CreateNewRoom()
 	log.Printf("created new room %s\n", newRoomId)
-	p, ok := w.ConnectedPlayersNotInRoom[receive.PlayerId]
+	p, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]
 
 	if !ok {
-		log.Printf("Could not find player %s\n", receive.PlayerId)
+		log.Printf("Could not find player %v\n", receive.Player)
 		return
 	}
 
-	send, err := NewMessage(receive.PlayerId, "room_created", RoomCreatedData{RoomId: newRoomId})
+	send, err := NewMessage(receive.Player, "room_created", RoomCreatedData{RoomId: newRoomId})
 	if err != nil {
 		log.Printf("Error creating message %v\n", err)
 		return
@@ -70,7 +70,7 @@ func handleCreateRoom(w *WaitingArea, receive Message) {
 	p.toPlayer <- send
 }
 
-func handleJoinRoom(w *WaitingArea, receive Message) {
+func (w *WaitingArea) handleJoinRoom(receive Message) {
 	// Assumes room exists, sends error if no room exists
 	var nested JoinRoomData
 	err := json.Unmarshal(receive.Data, &nested)
@@ -79,11 +79,9 @@ func handleJoinRoom(w *WaitingArea, receive Message) {
 		return
 	}
 	log.Printf("got join room %s from player %s\n", nested.RoomId, nested.Name)
-	player, ok := w.ConnectedPlayersNotInRoom[receive.PlayerId]
-
-	if !ok {
+	if _, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]; !ok {
 		// TODO send error messages or something
-		log.Printf("failed to join room because player %d not found\n", receive.PlayerId)
+		log.Printf("failed to join room because player %d not found\n", receive.Player.id)
 		return
 	}
 
@@ -94,23 +92,27 @@ func handleJoinRoom(w *WaitingArea, receive Message) {
 		return
 	}
 
-	delete(w.ConnectedPlayersNotInRoom, receive.PlayerId)
-	room.players = append(room.players, player)
+	// After deleting, the player is passed off to the thread running room.serve
+	delete(w.ConnectedPlayersNotInRoom, receive.Player.id)
 
-	send, err := NewMessage(receive.PlayerId, "room_joined", EmptyData{})
+	receive.Player.swapToServerChannel(room.receive)
 
-	// TODO swap out player channels
-	room = w.WaitingForPlayers[nested.RoomId]
+	// Forward the message to the room itself
+	room.receive <- receive
+
 	log.Printf("Room state: %v\n", room)
-	player.toPlayer <- send
 }
 
-func handleDisconnect(w *WaitingArea, receive Message) {
-	log.Printf("Player %d disconnected\n", receive.PlayerId)
+func (w *WaitingArea) handleDisconnect(receive Message) {
+	log.Printf("Player %d disconnected\n", receive.Player.id)
 
 	// Forward disconnect message to send thread
-	w.ConnectedPlayersNotInRoom[receive.PlayerId].toPlayer <- receive
-	delete(w.ConnectedPlayersNotInRoom, receive.PlayerId)
+	if _, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]; !ok {
+		log.Printf("Error: no player with ID %d found in connected player map\n", receive.Player.id)
+		return
+	}
+	receive.Player.toPlayer <- receive
+	delete(w.ConnectedPlayersNotInRoom, receive.Player.id)
 
 	log.Printf("connected players %v", w.ConnectedPlayersNotInRoom)
 }
@@ -119,15 +121,15 @@ func NewWaitingArea() WaitingArea {
 	w := WaitingArea{
 		WaitingForPlayers:         make(map[roomId]*room),
 		InGame:                    make(map[roomId]*room),
-		ConnectedPlayersNotInRoom: make(map[playerId]player),
+		ConnectedPlayersNotInRoom: make(map[playerId]*player),
 		nextId:                    0,
 		receive:                   make(chan Message),
-		messageHandlers:           make(map[string]func(*WaitingArea, Message)),
+		messageHandlers:           make(map[string]func(Message)),
 	}
 
-	w.messageHandlers["create_room"] = handleCreateRoom
-	w.messageHandlers["join_room"] = handleJoinRoom
-	w.messageHandlers["disconnect"] = handleDisconnect
+	w.messageHandlers["create_room"] = w.handleCreateRoom
+	w.messageHandlers["join_room"] = w.handleJoinRoom
+	w.messageHandlers["disconnect"] = w.handleDisconnect
 
 	return w
 }

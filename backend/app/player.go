@@ -15,6 +15,8 @@ import (
 
 type playerId int
 
+const invalidPlayerId = -1
+
 type player struct {
 	id          playerId
 	displayName string
@@ -27,7 +29,7 @@ type player struct {
 
 // Factory func for creating a new player.
 // Players are not initialized with a display name -- defaults to empty string.
-func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) player {
+func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) *player {
 	p := player{
 		id:           id,
 		displayName:  "",
@@ -40,7 +42,7 @@ func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) player 
 	go p.receiveThread()
 	go p.sendThread()
 
-	return p
+	return &p
 }
 
 // Thread for reading message from the websocket connection and sending them to the room
@@ -60,9 +62,10 @@ func (p *player) receiveThread() {
 
 			// TODO signal to server that this user has disconnected
 			log.Printf("receiveThread stopping for player %d\n", p.id)
-			p.toServer <- Message{PlayerId: p.id, Type: "disconnect", Data: []byte{}}
+			p.toServer <- Message{Player: p, Type: "disconnect", Data: []byte{}}
 			return
 		}
+
 		log.Printf("ReceiveThread got %v from p %d\n", bytes, p.id)
 		// TODO format message to have ID of sending player
 
@@ -71,9 +74,12 @@ func (p *player) receiveThread() {
 			continue
 		}
 
-		msg.PlayerId = p.id
+		// TODO is this weird to pass around a pointer to the receiving player like this?
+		msg.Player = p
+
+		// TODO could definitely have race conditions if e.g., connection receives a message meant for WaitingArea
+		// but swaps channels to room handler after message is received but before sending
 		p.toServerLock.Lock()
-		// TODO unmarshal msg into Message type
 		p.toServer <- msg
 		p.toServerLock.Unlock()
 	}

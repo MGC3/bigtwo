@@ -10,8 +10,8 @@ import (
 // a string that identifies what kind of message is stored
 // as bytes in data
 type Message struct {
-	PlayerId playerId `json:"-"`
-	Type     string   `json:"type"`
+	Player *player `json:"-"`
+	Type   string  `json:"type"`
 
 	// TODO omit empty?
 	// TODO can this be an empty interface? It might be nice to have nested
@@ -56,19 +56,24 @@ type RoomCreatedData struct {
 	RoomId roomId `json:"room_id"`
 }
 
+//
+// Internal messages sent between server threads
+type NewConnectedPlayerData struct {
+}
+
 type EmptyData struct {
 }
 
-func NewMessage(id playerId, messageType string, data interface{}) (Message, error) {
+func NewMessage(player *player, messageType string, data interface{}) (Message, error) {
 	packedData, err := json.Marshal(data)
 	if err != nil {
 		return Message{}, nil
 	}
 
 	m := Message{
-		PlayerId: id,
-		Type:     messageType,
-		Data:     json.RawMessage(packedData),
+		Player: player,
+		Type:   messageType,
+		Data:   json.RawMessage(packedData),
 	}
 
 	return m, nil
