@@ -36,7 +36,16 @@ func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO can I convert this to use channels? It would be nice to get rid of the locks.
-	waitingArea.AddNewConnectedPlayer(conn)
+	//waitingArea.AddNewConnectedPlayer(conn)
+	//connectedMessage, _ := app.NewMessage{nil, "new_connected_player", app.NewConnectedPlayerData{conn: conn}}
+	log.Printf("main conn %v\n", conn)
+	uninitializedPlayer := app.UninitializedPlayer(conn)
+	toWaitingArea, err := app.NewMessage(uninitializedPlayer, "new_connected_player", app.EmptyData{})
+	if err != nil {
+		log.Printf("EstablishWebsocketConnection failed %v\n", err)
+		return
+	}
+	waitingArea.Receive <- toWaitingArea
 	fmt.Println("Added new player to waiting area")
 }
 

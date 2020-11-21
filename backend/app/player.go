@@ -8,6 +8,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/websocket"
 	"log"
 	"sync"
@@ -27,22 +28,30 @@ type player struct {
 	toServer     chan Message
 }
 
-// Factory func for creating a new player.
-// Players are not initialized with a display name -- defaults to empty string.
-func newPlayer(id playerId, conn *websocket.Conn, toServer chan Message) *player {
+// TODO hacky way of using channels in main?
+func UninitializedPlayer(conn *websocket.Conn) *player {
 	p := player{
-		id:           id,
+		id:           invalidPlayerId,
 		displayName:  "",
 		conn:         conn,
 		toPlayer:     make(chan Message),
 		toServerLock: sync.Mutex{},
-		toServer:     toServer,
+		toServer:     nil,
 	}
 
+	return &p
+}
+
+func (p *player) initialize(id playerId, toServer chan Message) error {
+	if p.id != invalidPlayerId || p.toServer != nil {
+		return errors.New("Can't initialize player that already has an ID")
+	}
+
+	p.id = id
+	p.toServer = toServer
 	go p.receiveThread()
 	go p.sendThread()
-
-	return &p
+	return nil
 }
 
 // Thread for reading message from the websocket connection and sending them to the room

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	//    "sync"
-	"github.com/gorilla/websocket"
 )
 
 type WaitingArea struct {
@@ -13,7 +12,7 @@ type WaitingArea struct {
 	// TODO lock needed?
 	ConnectedPlayersNotInRoom map[playerId]*player
 	nextId                    playerId
-	receive                   chan Message
+	Receive                   chan Message
 
 	messageHandlers map[string]func(Message)
 }
@@ -23,7 +22,7 @@ type WaitingArea struct {
 func (w *WaitingArea) Serve() {
 	log.Println("WaitingArea serving...")
 	for {
-		receive := <-w.receive
+		receive := <-w.Receive
 		handler, ok := w.messageHandlers[receive.Type]
 
 		if !ok {
@@ -41,15 +40,16 @@ func (w *WaitingArea) CreateNewRoom() roomId {
 	return r.id
 }
 
-func (w *WaitingArea) AddNewConnectedPlayer(conn *websocket.Conn) {
+func (w *WaitingArea) handleNewConnectedPlayer(receive Message) {
 	if _, ok := w.ConnectedPlayersNotInRoom[w.nextId]; ok {
-		log.Fatal("Error - player ids are not unique")
+		log.Printf("Error - player ids are not unique")
+		return
 	}
 
-	p := newPlayer(w.nextId, conn, w.receive)
-	log.Printf("Got new player id %v\n", p)
+	receive.Player.initialize(w.nextId, w.Receive)
+	log.Printf("waiting area got new player %v\n", receive.Player)
+	w.ConnectedPlayersNotInRoom[receive.Player.id] = receive.Player
 	w.nextId += 1
-	w.ConnectedPlayersNotInRoom[p.id] = p
 }
 
 func (w *WaitingArea) handleCreateRoom(receive Message) {
@@ -123,13 +123,14 @@ func NewWaitingArea() WaitingArea {
 		InGame:                    make(map[roomId]*room),
 		ConnectedPlayersNotInRoom: make(map[playerId]*player),
 		nextId:                    0,
-		receive:                   make(chan Message),
+		Receive:                   make(chan Message),
 		messageHandlers:           make(map[string]func(Message)),
 	}
 
 	w.messageHandlers["create_room"] = w.handleCreateRoom
 	w.messageHandlers["join_room"] = w.handleJoinRoom
 	w.messageHandlers["disconnect"] = w.handleDisconnect
+	w.messageHandlers["new_connected_player"] = w.handleNewConnectedPlayer
 
 	return w
 }

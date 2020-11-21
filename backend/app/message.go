@@ -4,6 +4,7 @@ import (
 	//"log"
 	"encoding/json"
 	"github.com/MGC3/bigtwo/backend/app/game"
+	"github.com/gorilla/websocket"
 )
 
 // This type defines the outer message type, which contains
@@ -58,9 +59,6 @@ type RoomCreatedData struct {
 
 //
 // Internal messages sent between server threads
-type NewConnectedPlayerData struct {
-}
-
 type EmptyData struct {
 }
 
