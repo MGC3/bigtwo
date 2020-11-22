@@ -1,9 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-export const Button = ({ onClick, text, classes }) => {
+export const Button = ({ onClick, text, classes, icon }) => {
   return (
     <ButtonWrapper className={classes} onClick={onClick}>
+      {icon}
       {text}
     </ButtonWrapper>
   );

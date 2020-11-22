@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { PageWrapper } from "../../components/PageWrapper";
-import { Button } from "../../components/Button/Button";
+import { Button } from "../../components/Button";
+import { Speech } from "../../components/Speech";
 import {
   TextField,
   Dialog,
@@ -131,6 +132,7 @@ export const LandingPage = ({ history, socket }) => {
           />
         </DialogContent>
         <DialogActions>
+          <Speech callbackFn={setUsername} />
           <Button onClick={joinRoom} text="Submit" />
         </DialogActions>
       </Dialog>
