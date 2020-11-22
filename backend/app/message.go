@@ -4,7 +4,6 @@ import (
 	//"log"
 	"encoding/json"
 	"github.com/MGC3/bigtwo/backend/app/game"
-	"github.com/gorilla/websocket"
 )
 
 // This type defines the outer message type, which contains
