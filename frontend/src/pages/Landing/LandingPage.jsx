@@ -26,7 +26,7 @@ export const LandingPage = ({ history, socket }) => {
           setOpen(true);
           break;
         case "room_joined":
-          history.push("/room/" + roomId);
+          history.push(`/room/${roomId}`);
           break;
         default:
           console.warn("received unknown WS type");

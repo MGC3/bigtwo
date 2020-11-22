@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { PageWrapper } from "../../components/PageWrapper";
+import { Button } from "../../components/Button";
 
 export const LobbyPage = ({
   match: {
     params: { roomId },
   },
   socket,
+  history,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [playerId, setPlayerId] = useState(null);
@@ -30,11 +32,22 @@ export const LobbyPage = ({
           setPlayers(data.players);
           setIsLoading(false);
           break;
+        case "game_started":
+          history.push(`/room/${roomId}/game`);
+          break;
         default:
           console.warn("received unknown WS type");
       }
     };
   });
+
+  const handleStartGameClick = () => {
+    socket.send(
+      JSON.stringify({
+        type: "start_game",
+      })
+    );
+  };
 
   return (
     <PageWrapper>
@@ -43,6 +56,7 @@ export const LobbyPage = ({
       ) : (
         <div>
           <h1>Room id is: {roomId}</h1>
+          <Button onClick={handleStartGameClick} text="Start Game" />
           <h1>Player id is: {playerId}</h1>
           <h1>You are: {players[playerId]}</h1>
           <h1>Players list:</h1>
