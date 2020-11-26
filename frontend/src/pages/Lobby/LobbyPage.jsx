@@ -9,7 +9,7 @@ export const LobbyPage = ({
   socket,
   history,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [playerId, setPlayerId] = useState(null);
   const [players, setPlayers] = useState([]);
 
@@ -30,7 +30,7 @@ export const LobbyPage = ({
         case "room_state":
           setPlayerId(data.client_id);
           setPlayers(data.players);
-          setIsLoading(false);
+          setLoading(false);
           break;
         case "game_started":
           history.push(`/room/${roomId}/game`);
@@ -51,7 +51,7 @@ export const LobbyPage = ({
 
   return (
     <PageWrapper>
-      {isLoading ? (
+      {loading ? (
         "Loading"
       ) : (
         <div>

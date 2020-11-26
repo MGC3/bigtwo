@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Card } from "../Card/Card";
+import { Card } from "../Card/";
 
-export const Hand = ({ cards }) => {
+export const Hand = ({ cards, rotate, isPlayer }) => {
   const [selectedCards, setSelectedCards] = useState([]);
 
   const handleCardSelect = (card) => {
@@ -29,7 +29,7 @@ export const Hand = ({ cards }) => {
   return (
     <>
       {/* TODO: debugging code, remove later vvvvvvvvv*/}
-      <h1 style={{ marginBottom: "64px" }}>
+      {/* <h1 style={{ marginBottom: "64px" }}>
         SelectedCards state is:
         {selectedCards.length > 0 &&
           selectedCards.map((card) => (
@@ -38,9 +38,9 @@ export const Hand = ({ cards }) => {
             </span>
           ))}
         {selectedCards.length === 0 && "None Selected"}
-      </h1>
+      </h1> */}
       {/* TODO: debugging code, remove later ^^^^^^^^^*/}
-      <HandContainer>
+      <HandContainer rotate={rotate}>
         {cards.map((card, i) => {
           return (
             <Card
@@ -58,4 +58,5 @@ export const Hand = ({ cards }) => {
 
 const HandContainer = styled.div`
   display: flex;
+  transform: ${(props) => (props.rotate ? "rotate(90deg)" : "none")};
 `;

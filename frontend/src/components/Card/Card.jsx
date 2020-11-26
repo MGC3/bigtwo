@@ -36,8 +36,8 @@ export const Card = ({ data, selected, handleCardSelect }) => {
 };
 
 const CardContainer = styled.div`
-  height: 210px;
-  width: 150px;
+  height: 196px;
+  width: 140px;
   border: solid;
   padding: 6px 0 0 8px;
   box-sizing: border-box;
