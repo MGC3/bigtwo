@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { Card } from "../Card/";
 
-export const Hand = ({ cards, rotate, isPlayer }) => {
+export const Hand = ({ cards, isPlayer, count }) => {
   const [selectedCards, setSelectedCards] = useState([]);
 
   const handleCardSelect = (card) => {
@@ -40,17 +40,23 @@ export const Hand = ({ cards, rotate, isPlayer }) => {
         {selectedCards.length === 0 && "None Selected"}
       </h1> */}
       {/* TODO: debugging code, remove later ^^^^^^^^^*/}
-      <HandContainer rotate={rotate}>
-        {cards.map((card, i) => {
-          return (
-            <Card
-              key={card.rank + card.suit}
-              data={card}
-              handleCardSelect={handleCardSelect}
-              selected={isCardSelected(card)}
-            />
-          );
-        })}
+      <HandContainer>
+        {cards &&
+          cards.map((card, i) => {
+            return (
+              <Card
+                key={card.rank + card.suit}
+                data={card}
+                handleCardSelect={handleCardSelect}
+                selected={isCardSelected(card)}
+              />
+            );
+          })}
+        {count &&
+          !isPlayer &&
+          [...Array(count)].map((card, i) => {
+            return <Card key={i + 1} hidden />;
+          })}
       </HandContainer>
     </>
   );
@@ -58,5 +64,4 @@ export const Hand = ({ cards, rotate, isPlayer }) => {
 
 const HandContainer = styled.div`
   display: flex;
-  transform: ${(props) => (props.rotate ? "rotate(90deg)" : "none")};
 `;

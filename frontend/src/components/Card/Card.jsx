@@ -2,7 +2,11 @@ import React from "react";
 import styled from "styled-components";
 import { GiDiamonds, GiHearts, GiSpades, GiClubs } from "react-icons/gi";
 
-export const Card = ({ data, selected, handleCardSelect }) => {
+export const Card = ({ data, selected, handleCardSelect, hidden }) => {
+  if (hidden) {
+    return <CardContainer hidden />;
+  }
+
   const iconMaker = (suit) => {
     switch (suit) {
       case "D":
@@ -36,8 +40,8 @@ export const Card = ({ data, selected, handleCardSelect }) => {
 };
 
 const CardContainer = styled.div`
-  height: 196px;
-  width: 140px;
+  height: ${(props) => (props.hidden ? "140px" : "196px")};
+  width: ${(props) => (props.hidden ? "100px" : "140px")};
   border: solid;
   padding: 6px 0 0 8px;
   box-sizing: border-box;
@@ -45,7 +49,7 @@ const CardContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-right: -65px;
+  margin-right: ${(props) => (props.hidden ? "-50px" : "-65px")};
   transition-duration: 0.15s;
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
