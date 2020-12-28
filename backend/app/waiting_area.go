@@ -78,6 +78,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 		log.Printf("Could not unmarshal nested packet %v", err)
 		return
 	}
+
 	log.Printf("got join room %s from player %s\n", nested.RoomId, nested.Name)
 	if _, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]; !ok {
 		// TODO send error messages or something
@@ -85,6 +86,11 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 		return
 	}
 
+	// Set player's name from message
+	// TODO check if the display name isn't none?
+	receive.Player.displayName = nested.Name
+
+	// TODO check that there are < 4 players in the room
 	room, ok := w.WaitingForPlayers[nested.RoomId]
 
 	if !ok {

@@ -13,6 +13,10 @@ type Message struct {
 	Player *player `json:"-"`
 	Type   string  `json:"type"`
 
+	// TODO add 'internal' bool to be able to tell if the message was received
+	// from a client or if the message was created internally on the backend
+	// for validation
+
 	// TODO omit empty?
 	// TODO can this be an empty interface? It might be nice to have nested
 	// messages passed around internally that don't need to be marshalled/unmarshalled
@@ -54,6 +58,12 @@ type ErrorData struct {
 // Type == "room_created"
 type RoomCreatedData struct {
 	RoomId roomId `json:"room_id"`
+}
+
+// Type == "room_state_changed"
+type RoomStateData struct {
+	PlayerNames []string `json:"players"`
+	ClientId    int      `json:"client_id"`
 }
 
 //

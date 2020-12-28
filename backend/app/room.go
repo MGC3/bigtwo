@@ -48,12 +48,11 @@ func (r *room) handleDisconnect(receive Message) {
 		log.Printf("its a player %v\n", player)
 		if player == nil {
 			continue
-			if player == nil {
-				continue
-			}
 		}
+
 		if player.id == receive.Player.id {
 			r.players[i] = nil
+			// TODO move players back so non-nil are first
 			return
 		}
 	}
@@ -63,6 +62,7 @@ func (r *room) handleDisconnect(receive Message) {
 
 func (r *room) handleJoinRoom(receive Message) {
 	log.Printf("Got join room from player %v\n", receive.Player)
+	playerFound := false
 	for i, player := range r.players {
 		if player == nil {
 			r.players[i] = receive.Player
@@ -72,11 +72,79 @@ func (r *room) handleJoinRoom(receive Message) {
 			}
 			receive.Player.toPlayer <- send
 			log.Printf("Room state %v\n", r)
-			return
+			playerFound = true
+			break
 		}
 	}
 
-	log.Printf("room handleJoinRoom error - no player found")
+	if !playerFound {
+		log.Printf("room handleJoinRoom error - no player found")
+		return
+	}
+
+	// forward room state changed to all clients
+	r.pushRoomStateToPlayers()
+}
+
+func (r *room) handleRequestRoomState(receive Message) {
+	log.Printf("Got request room state from player %v\n", receive.Player)
+	data := r.roomStateData()
+	data.ClientId = r.clientIdFromPlayerId(receive.Player.id)
+	msg, err := NewMessage(receive.Player, "room_state", data)
+	if err != nil {
+		log.Printf("handleRequestRoomState err %v\n", err)
+		return
+	}
+	receive.Player.toPlayer <- msg
+}
+
+func (r *room) pushRoomStateToPlayers() {
+	data := r.roomStateData()
+	for clientId, player := range r.players {
+		if player == nil {
+			break
+		}
+		data.ClientId = clientId
+		msg, err := NewMessage(player, "room_state", data)
+		if err != nil {
+			log.Printf("pushRoomStateToPlayers err %v\n", err)
+			return
+		}
+		player.toPlayer <- msg
+	}
+}
+
+func (r *room) clientIdFromPlayerId(id playerId) int {
+	clientId := -1
+	for i, player := range r.players {
+		if player == nil {
+			break
+		}
+
+		if player.id == id {
+			clientId = i
+			break
+		}
+	}
+
+	if clientId == -1 {
+		log.Printf("Error: no player with id %d found in room %s\n", id, r.id)
+	}
+
+	return clientId
+}
+
+func (r *room) roomStateData() RoomStateData {
+	ret := RoomStateData{PlayerNames: []string{}}
+	for _, player := range r.players {
+		if player == nil {
+			break
+		}
+
+		ret.PlayerNames = append(ret.PlayerNames, player.displayName)
+	}
+
+	return ret
 }
 
 func newRoom(id roomId) *room {
@@ -90,6 +158,7 @@ func newRoom(id roomId) *room {
 
 	r.messageHandlers["disconnect"] = r.handleDisconnect
 	r.messageHandlers["join_room"] = r.handleJoinRoom
+	r.messageHandlers["request_room_state"] = r.handleRequestRoomState
 
 	go r.serve()
 	return &r
