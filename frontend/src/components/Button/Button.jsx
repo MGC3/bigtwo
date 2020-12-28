@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-export const Button = ({ onClick, text, classes, icon }) => {
+export const Button = ({ onClick, text, classes, icon, ...props }) => {
   return (
-    <ButtonWrapper className={classes} onClick={onClick}>
+    <ButtonWrapper className={classes} onClick={onClick} {...props}>
       {icon}
       {text}
     </ButtonWrapper>
@@ -29,7 +29,7 @@ const ButtonWrapper = styled.button`
   transition: all 0.2s ease;
   margin: 16px 0;
   &:hover {
-    cursor: pointer;
+    cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   }
 
   &:active {
