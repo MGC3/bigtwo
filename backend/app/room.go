@@ -2,6 +2,7 @@ package app
 
 import (
 	//	"encoding/json"
+	"github.com/MGC3/bigtwo/backend/app/game"
 	"log"
 	//    "sync"
 	//	"github.com/gorilla/websocket"
@@ -22,11 +23,19 @@ type room struct {
 	// It's assumed that non-nil players are at the start of the array
 	// And that all uninitialized (nil) players come after the initialized
 	// players
-	players         [maxNumPlayersInRoom]*player
-	receive         chan Message
-	messageHandlers map[string]func(Message)
+	players       [maxNumPlayersInRoom]*player
+	receive       chan Message
+	lobbyHandlers map[string]func(Message)
 
 	// TODO waiting area channel to signal when room is done with the game?
+	gameHandlers map[string]func(Message)
+	gameStarted  bool
+
+	//
+	// TODO can/should this be refactored to be more "modular"?
+	clientIdTurn   int
+	numTurnsPassed int
+	lastPlayedHand game.PlayedHand
 }
 
 func (r *room) serve() {
@@ -36,10 +45,17 @@ func (r *room) serve() {
 
 	for {
 		receive := <-r.receive
-		handler, ok := r.messageHandlers[receive.Type]
+
+		var handler func(Message)
+		var ok bool
+		if r.gameStarted {
+			handler, ok = r.gameHandlers[receive.Type]
+		} else {
+			handler, ok = r.lobbyHandlers[receive.Type]
+		}
 
 		if !ok {
-			log.Printf("Unhandled message type %s\n", receive.Type)
+			log.Printf("Unhandled message type %s for game started = %v\n", receive.Type, r.gameStarted)
 			continue
 		}
 
@@ -62,6 +78,7 @@ func (r *room) handleDisconnect(receive Message) {
 		r.players[i-1] = r.players[i]
 	}
 
+	// TODO what if game has started?
 	r.pushRoomStateToPlayers()
 }
 
@@ -92,7 +109,7 @@ func (r *room) handleJoinRoom(receive Message) {
 }
 
 func (r *room) handleRequestRoomState(receive Message) {
-	log.Printf("Got request room state from player %v\n", receive.Player)
+	log.Printf("Got request room state from player %d\n", receive.Player.displayName)
 	data := r.roomStateData()
 	data.ClientId = r.clientIdFromPlayerId(receive.Player.id)
 	msg, err := NewMessage(receive.Player, "room_state", data)
@@ -101,6 +118,55 @@ func (r *room) handleRequestRoomState(receive Message) {
 		return
 	}
 	receive.Player.toPlayer <- msg
+}
+
+func (r *room) handleStartGame(receive Message) {
+	log.Printf("Got game start request from player %s\n", receive.Player.displayName)
+
+	deck := game.NewDeck()
+
+	// deal cards to each player
+	cardsPerPlayer := deck.CardsLeft() / r.numPlayers()
+
+	for _, player := range r.players {
+		if player == nil {
+			break
+		}
+		player.currentHand = deck.Deal(cardsPerPlayer)
+	}
+
+	// TODO first player must have 3 of clubs?
+	// or choose a random player to start?
+	r.gameStarted = true
+
+	gameStartedMessage, err := NewMessage(nil, "game_started", EmptyData{})
+
+	if err != nil {
+		log.Printf("handleStartGame could not create game started msg %v\n", err)
+		return
+	}
+
+	for _, player := range r.players {
+		if player == nil {
+			break
+		}
+		player.toPlayer <- gameStartedMessage
+	}
+}
+
+func (r *room) handleRequestGameState(receive Message) {
+	log.Printf("Got request game state message from player %s\n", receive.Player.displayName)
+
+	gameState := r.gameStateData()
+	gameState.UserHand = receive.Player.currentHand
+	gameState.ClientId = r.clientIdFromPlayerId(receive.Player.id)
+
+	send, err := NewMessage(nil, "game_state", gameState)
+	if err != nil {
+		log.Fatal("could not create game state %v\n", err)
+		return
+	}
+	receive.Player.toPlayer <- send
 }
 
 func (r *room) pushRoomStateToPlayers() {
@@ -152,6 +218,54 @@ func (r *room) roomStateData() RoomStateData {
 	return ret
 }
 
+// creates a GameStateData instance with all the common state populated
+// player-specific data (ie, UserHand) is left uninitialized
+// Should only be called after the game has started
+func (r *room) gameStateData() GameStateData {
+	ret := GameStateData{
+		AllPlayerHands: []OtherPlayerHand{},
+		LastPlayedHand: r.lastPlayedHand.Cards,
+	}
+
+	if !r.gameStarted {
+		log.Printf("gameStateData() called before game started\n")
+		return ret
+	}
+
+	for _, player := range r.players {
+		if player == nil {
+			break
+		}
+
+		playerHand := OtherPlayerHand{
+			Name:  player.displayName,
+			Count: len(player.currentHand),
+		}
+		ret.AllPlayerHands = append(ret.AllPlayerHands, playerHand)
+	}
+
+	if r.numTurnsPassed > 0 {
+		ret.LastAction = "passed"
+	} else {
+		ret.LastAction = "played_hand"
+	}
+
+	if r.clientIdTurn < 0 || r.clientIdTurn > maxNumPlayersInRoom {
+		log.Printf("bad current client id %d\n", r.clientIdTurn)
+		return ret
+	}
+
+	currentPlayer := r.players[r.clientIdTurn]
+
+	if currentPlayer == nil {
+		log.Printf("current client is nil %d\n", r.clientIdTurn)
+		return ret
+	}
+
+	ret.CurrentUserTurn = r.players[r.clientIdTurn].displayName
+	return ret
+}
+
 func (r *room) numPlayers() int {
 	n := 0
 	for _, player := range r.players {
@@ -166,15 +280,23 @@ func (r *room) numPlayers() int {
 func newRoom(id roomId) *room {
 	r := room{
 		// TODO generate real random-ish string
-		id:              "ABCD",
-		players:         [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
-		receive:         make(chan Message),
-		messageHandlers: make(map[string]func(Message)),
+		id:             "ABCD",
+		players:        [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
+		receive:        make(chan Message),
+		lobbyHandlers:  make(map[string]func(Message)),
+		gameHandlers:   make(map[string]func(Message)),
+		gameStarted:    false,
+		clientIdTurn:   0,
+		numTurnsPassed: 0,
 	}
 
-	r.messageHandlers["disconnect"] = r.handleDisconnect
-	r.messageHandlers["join_room"] = r.handleJoinRoom
-	r.messageHandlers["request_room_state"] = r.handleRequestRoomState
+	r.lobbyHandlers["disconnect"] = r.handleDisconnect
+	r.lobbyHandlers["join_room"] = r.handleJoinRoom
+	r.lobbyHandlers["request_room_state"] = r.handleRequestRoomState
+	r.lobbyHandlers["start_game"] = r.handleStartGame
+
+	r.gameHandlers["disconnect"] = r.handleDisconnect
+	r.gameHandlers["request_game_state"] = r.handleRequestGameState
 
 	go r.serve()
 	return &r
