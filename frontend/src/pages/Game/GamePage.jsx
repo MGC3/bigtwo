@@ -133,8 +133,16 @@ export const GamePage = ({ socket }) => {
           </RightPlayerSlot>
         </CenterRow>
         <ButtonGroup>
-          <Button text="Pass" onClick={handlePassButtonClick} />
-          <Button text="Play" onClick={handlePlayButtonClick} />
+          <Button
+            text="Pass"
+            onClick={handlePassButtonClick}
+            // disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
+          />
+          <Button
+            text="Play"
+            onClick={handlePlayButtonClick}
+            // disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
+          />
         </ButtonGroup>
         <PlayerSlot>
           <Hand
