@@ -75,9 +75,6 @@ func (p *player) receiveThread() {
 			return
 		}
 
-		log.Printf("ReceiveThread got %v from p %d\n", bytes, p.id)
-		// TODO format message to have ID of sending player
-
 		if err := json.Unmarshal(bytes, &msg); err != nil {
 			log.Printf("receiveThread failed to unmarshal bc %v", err)
 			continue
@@ -123,8 +120,6 @@ func (p *player) sendThread() {
 		err := p.conn.WriteJSON(msg)
 		if err != nil {
 			log.Printf("sendThread write failed %v\n", err)
-		} else {
-			log.Printf("sendThread wrote message %v bytes\n", msg)
 		}
 	}
 }

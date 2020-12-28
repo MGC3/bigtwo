@@ -16,7 +16,12 @@ type roomId string
 // Represents a single room.
 // A room can have 0 to maxNumPlayersinRoom players.
 type room struct {
-	id              roomId
+	id roomId
+
+	// Players are initialized to nil
+	// It's assumed that non-nil players are at the start of the array
+	// And that all uninitialized (nil) players come after the initialized
+	// players
 	players         [maxNumPlayersInRoom]*player
 	receive         chan Message
 	messageHandlers map[string]func(Message)
@@ -44,20 +49,20 @@ func (r *room) serve() {
 
 func (r *room) handleDisconnect(receive Message) {
 	// TODO delete (or invalidate?) player from array
-	for i, player := range r.players {
-		log.Printf("its a player %v\n", player)
-		if player == nil {
-			continue
-		}
+	disconnectedClientId := r.clientIdFromPlayerId(receive.Player.id)
 
-		if player.id == receive.Player.id {
-			r.players[i] = nil
-			// TODO move players back so non-nil are first
-			return
-		}
+	if disconnectedClientId == -1 {
+		log.Printf("room handleDisconnect error - no player found")
+		return
 	}
 
-	log.Printf("room handleDisconnect error - no player found")
+	// move all players to fill in disconnected players
+	r.players[disconnectedClientId] = nil
+	for i := disconnectedClientId + 1; i < maxNumPlayersInRoom; i++ {
+		r.players[i-1] = r.players[i]
+	}
+
+	r.pushRoomStateToPlayers()
 }
 
 func (r *room) handleJoinRoom(receive Message) {
@@ -145,6 +150,17 @@ func (r *room) roomStateData() RoomStateData {
 	}
 
 	return ret
+}
+
+func (r *room) numPlayers() int {
+	n := 0
+	for _, player := range r.players {
+		if player != nil {
+			n += 1
+		}
+	}
+
+	return n
 }
 
 func newRoom(id roomId) *room {

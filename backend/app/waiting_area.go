@@ -98,6 +98,11 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 		return
 	}
 
+	if room.numPlayers() >= maxNumPlayersInRoom {
+		log.Printf("failed to join room because room %d has %d players\n", nested.RoomId, room.numPlayers())
+		return
+	}
+
 	// After deleting, the player is passed off to the thread running room.serve
 	delete(w.ConnectedPlayersNotInRoom, receive.Player.id)
 
