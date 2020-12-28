@@ -89,6 +89,25 @@ export const GamePage = ({ socket }) => {
     };
   });
 
+  const handlePlayButtonClick = () => {
+    socket.send(
+      JSON.stringify({
+        type: "play_move",
+        data: {
+          cards: selectedCards,
+        },
+      })
+    );
+  };
+
+  const handlePassButtonClick = () => {
+    socket.send(
+      JSON.stringify({
+        type: "pass_move",
+      })
+    );
+  };
+
   return (
     <PageWrapper>
       <GameContainer>
@@ -114,8 +133,8 @@ export const GamePage = ({ socket }) => {
           </RightPlayerSlot>
         </CenterRow>
         <ButtonGroup>
-          <Button text="Pass" />
-          <Button text="Play" />
+          <Button text="Pass" onClick={handlePassButtonClick} />
+          <Button text="Play" onClick={handlePlayButtonClick} />
         </ButtonGroup>
         <PlayerSlot>
           <Hand
