@@ -10,6 +10,11 @@ export const Hand = ({
   setSelectedCards,
 }) => {
   const handleCardSelect = (card) => {
+    // return if user is trying to click a card in last played hand area
+    if (!isPlayer) {
+      return false;
+    }
+
     // deselect the card if it's already been selected
     if (selectedCards.includes(card)) {
       let updatedCards = [...selectedCards].filter((d) => d !== card);

@@ -124,7 +124,9 @@ export const GamePage = ({ socket }) => {
             <div> "Player 3"</div>
             <Hand count={6} rotate />
           </LeftPlayerSlot>
-          <DroppableArea />
+          <DroppableArea>
+            {lastPlayedHand && <Hand cards={lastPlayedHand} />}
+          </DroppableArea>
           <RightPlayerSlot rotate>
             {/* <div>{player4.name}</div>
           <Hand count={player4.count} /> */}
