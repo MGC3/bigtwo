@@ -30,6 +30,7 @@ export const GamePage = ({ socket }) => {
   const [lastPlayedHand, setLastPlayedHand] = useState([]);
   const [currentUserTurn, setCurrentUserTurn] = useState("");
   const [userPlayerNumber, setUserPlayerNumber] = useState(0);
+  const [selectedCards, setSelectedCards] = useState([]);
 
   let isTwoPlayerGame = false;
   let isThreePlayerGame = false;
@@ -117,7 +118,12 @@ export const GamePage = ({ socket }) => {
           <Button text="Play" />
         </ButtonGroup>
         <PlayerSlot>
-          <Hand cards={mockCardsData} isPlayer />
+          <Hand
+            cards={mockCardsData}
+            isPlayer
+            selectedCards={selectedCards}
+            setSelectedCards={setSelectedCards}
+          />
           {/* <Hand cards={userHand} isPlayer /> */}
           <div> "Player 1"</div>
           {/* <div>{player1.name}</div> */}

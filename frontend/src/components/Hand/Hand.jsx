@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { Card } from "../Card/";
 
-export const Hand = ({ cards, isPlayer, count }) => {
-  const [selectedCards, setSelectedCards] = useState([]);
-
+export const Hand = ({
+  cards,
+  isPlayer,
+  count,
+  selectedCards,
+  setSelectedCards,
+}) => {
   const handleCardSelect = (card) => {
     // deselect the card if it's already been selected
     if (selectedCards.includes(card)) {
