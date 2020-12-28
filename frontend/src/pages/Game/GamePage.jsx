@@ -20,7 +20,7 @@ const mockGameState = {
     },
   ],
   current_user_turn: "Michael",
-  user_player_number: 0,
+  client_id: 0,
 };
 
 export const GamePage = ({ socket }) => {
@@ -60,12 +60,9 @@ export const GamePage = ({ socket }) => {
             isThreePlayerGame = true;
           }
 
-          player1 = data.all_player_hands[data.user_player_number];
+          player1 = data.all_player_hands[data.client_id];
 
-          let otherPlayers = data.all_player_hands.splice(
-            data.user_player_number,
-            1
-          );
+          let otherPlayers = data.all_player_hands.splice(data.client_id, 1);
 
           player2 = otherPlayers[0];
 
@@ -81,7 +78,7 @@ export const GamePage = ({ socket }) => {
           // setAllPlayerHands(data.all_player_hands); // might not need this
           setLastPlayedHand(data.last_played_hand);
           setCurrentUserTurn(data.current_user_turn);
-          setUserPlayerNumber(data.user_player_number);
+          setUserPlayerNumber(data.client_id);
           setLoading(false);
 
           break;
