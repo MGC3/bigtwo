@@ -39,7 +39,6 @@ export const GamePage = ({ socket }) => {
   let player3 = null;
   let player4 = null;
 
-  // comment out until backened WS is ready or mocked
   // useEffect(() => {
   //   socket.send(
   //     JSON.stringify({
@@ -112,51 +111,59 @@ export const GamePage = ({ socket }) => {
     <PageWrapper>
       <GameContainer>
         <PlayerSlot>
-          {/* <div>{player2.name}</div>
-          <Hand count={player2.count} /> */}
-          <div>"Player 2"</div>
-          <Hand count={13} />
+          {player2 && (
+            <>
+              <div>{player2.name}</div>
+              <Hand count={player2.count} />
+            </>
+          )}
         </PlayerSlot>
         <CenterRow>
           <LeftPlayerSlot rotate>
-            {/* <div>{player3.name}</div>
-            <Hand count={player3.count} /> */}
-            <div> "Player 3"</div>
-            <Hand count={6} rotate />
+            {player3 && (
+              <>
+                <div>{player3.name}</div>
+                <Hand count={player3.count} />
+              </>
+            )}
           </LeftPlayerSlot>
           <DroppableArea>
             {lastPlayedHand && <Hand cards={lastPlayedHand} />}
           </DroppableArea>
           <RightPlayerSlot rotate>
-            {/* <div>{player4.name}</div>
-          <Hand count={player4.count} /> */}
-            <div> "Player 4"</div>
-            <Hand count={6} />
+            {player4 && (
+              <>
+                <div>{player4.name}</div>
+                <Hand count={player4.count} />
+              </>
+            )}
           </RightPlayerSlot>
         </CenterRow>
-        <ButtonGroup>
-          <Button
-            text="Pass"
-            onClick={handlePassButtonClick}
-            // disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
-          />
-          <Button
-            text="Play"
-            onClick={handlePlayButtonClick}
-            // disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
-          />
-        </ButtonGroup>
-        <PlayerSlot>
-          <Hand
-            cards={mockCardsData}
-            isPlayer
-            selectedCards={selectedCards}
-            setSelectedCards={setSelectedCards}
-          />
-          {/* <Hand cards={userHand} isPlayer /> */}
-          <div> "Player 1"</div>
-          {/* <div>{player1.name}</div> */}
-        </PlayerSlot>
+        {player1 && (
+          <>
+            <ButtonGroup>
+              <Button
+                text="Pass"
+                onClick={handlePassButtonClick}
+                disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
+              />
+              <Button
+                text="Play"
+                onClick={handlePlayButtonClick}
+                disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
+              />
+            </ButtonGroup>
+            <PlayerSlot>
+              <Hand
+                cards={userHand}
+                isPlayer
+                selectedCards={selectedCards}
+                setSelectedCards={setSelectedCards}
+              />
+              <div>{player1.name}</div>
+            </PlayerSlot>
+          </>
+        )}
       </GameContainer>
     </PageWrapper>
   );
