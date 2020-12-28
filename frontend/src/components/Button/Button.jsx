@@ -28,6 +28,7 @@ const ButtonWrapper = styled.button`
   transform: translate(0, 0);
   transition: all 0.2s ease;
   margin: 16px 0;
+
   &:hover {
     cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   }

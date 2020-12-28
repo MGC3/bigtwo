@@ -55,6 +55,7 @@ const CardContainer = styled.div`
   border-radius: 5px;
   background: ${(props) => (props.isSelected ? "#fffae6" : "#ffffff")};
   transform: ${(props) => (props.isSelected ? "translateY(-50px)" : "")};
+  color: black;
 
   &:hover {
     cursor: ${(props) => (props.isSelected ? "grab" : "pointer")};

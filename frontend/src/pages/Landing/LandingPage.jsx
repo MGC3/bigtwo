@@ -8,7 +8,28 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  withStyles,
 } from "@material-ui/core/";
+
+const CustomTextField = withStyles({
+  root: {
+    "& .MuiInputLabel-root": {
+      color: "white",
+    },
+    "& label.Mui-focused": {
+      color: "white",
+    },
+    "& .MuiInputBase-root": {
+      color: "white",
+    },
+    "& .MuiInput-underline:after": {
+      borderBottomColor: "white",
+    },
+    "& .MuiInput-underline:before": {
+      borderBottomColor: "white",
+    },
+  },
+})(TextField);
 
 export const LandingPage = ({ history, socket }) => {
   const [roomId, setRoomId] = useState("");
@@ -89,7 +110,7 @@ export const LandingPage = ({ history, socket }) => {
           text="Create New Game"
         />
         <div>OR </div>
-        <TextField
+        <CustomTextField
           id="outlined-basic"
           label="Enter room code"
           value={roomId}
@@ -99,6 +120,7 @@ export const LandingPage = ({ history, socket }) => {
             style: {
               fontSize: "40px",
               textAlign: "center",
+              // color: "white",
             },
             maxLength: 4,
           }}
