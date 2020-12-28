@@ -3,41 +3,18 @@ import styled from "styled-components";
 import { PageWrapper } from "../../components/PageWrapper";
 import { Button } from "../../components/Button";
 import { Hand } from "../../components/Hand";
-import { mockCardsData } from "../../api/testData";
-
-const mockGameState = {
-  user_hand: mockCardsData,
-  all_player_hands: [
-    { name: "Michael", count: 13 },
-    { name: "Player 2", count: 6 },
-    { name: "Player 3", count: 8 },
-    { name: "Player 4", count: 4 },
-  ],
-  last_played_hand: [
-    {
-      rank: "3",
-      suit: "C",
-    },
-  ],
-  current_user_turn: "Michael",
-  client_id: 0,
-};
 
 export const GamePage = ({ socket }) => {
   const [loading, setLoading] = useState(true);
   const [userHand, setUserHand] = useState([]);
-  // const [allPlayerHands, setAllPlayerHands] = useState([]); // might not need this
   const [lastPlayedHand, setLastPlayedHand] = useState([]);
   const [currentUserTurn, setCurrentUserTurn] = useState("");
   const [userPlayerNumber, setUserPlayerNumber] = useState(0);
   const [selectedCards, setSelectedCards] = useState([]);
-
-  let isTwoPlayerGame = false;
-  let isThreePlayerGame = false;
-  let player1 = null;
-  let player2 = null;
-  let player3 = null;
-  let player4 = null;
+  const [player1, setPlayer1] = useState(null);
+  const [player2, setPlayer2] = useState(null);
+  const [player3, setPlayer3] = useState(null);
+  const [player4, setPlayer4] = useState(null);
 
   useEffect(() => {
     socket.send(
@@ -54,28 +31,22 @@ export const GamePage = ({ socket }) => {
 
       switch (type) {
         case "game_state":
-          if (data.all_player_hands.length === 2) {
-            isTwoPlayerGame = true;
-          } else if (data.all_player_hands.length === 3) {
-            isThreePlayerGame = true;
-          }
+          setPlayer1(data.all_player_hands[data.client_id]);
 
-          player1 = data.all_player_hands[data.client_id];
+          data.all_player_hands.splice(data.client_id, 1);
+          let otherPlayers = data.all_player_hands;
 
-          let otherPlayers = data.all_player_hands.splice(data.client_id, 1);
-
-          player2 = otherPlayers[0];
+          setPlayer2(otherPlayers[0]);
 
           if (otherPlayers[1]) {
-            player3 = otherPlayers[1];
+            setPlayer3(otherPlayers[1]);
           }
 
           if (otherPlayers[2]) {
-            player4 = otherPlayers[2];
+            setPlayer4(otherPlayers[2]);
           }
 
           setUserHand(data.user_hand);
-          // setAllPlayerHands(data.all_player_hands); // might not need this
           setLastPlayedHand(data.last_played_hand);
           setCurrentUserTurn(data.current_user_turn);
           setUserPlayerNumber(data.client_id);
