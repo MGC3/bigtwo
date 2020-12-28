@@ -125,14 +125,13 @@ func (r *room) handleStartGame(receive Message) {
 
 	deck := game.NewDeck()
 
-	// deal cards to each player
-	cardsPerPlayer := deck.CardsLeft() / r.numPlayers()
-
 	for _, player := range r.players {
 		if player == nil {
 			break
 		}
-		player.currentHand = deck.Deal(cardsPerPlayer)
+
+		// TODO make this a constant somewhere?
+		player.currentHand = deck.Deal(13)
 	}
 
 	// TODO first player must have 3 of clubs?

@@ -39,13 +39,13 @@ export const GamePage = ({ socket }) => {
   let player3 = null;
   let player4 = null;
 
-  // useEffect(() => {
-  //   socket.send(
-  //     JSON.stringify({
-  //       type: "request_game_state",
-  //     })
-  //   );
-  // }, []);
+  useEffect(() => {
+    socket.send(
+      JSON.stringify({
+        type: "request_game_state",
+      })
+    );
+  }, []);
 
   useEffect(() => {
     socket.onmessage = function (event) {
