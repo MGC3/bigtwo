@@ -9,7 +9,6 @@ export const GamePage = ({ socket }) => {
   const [userHand, setUserHand] = useState([]);
   const [lastPlayedHand, setLastPlayedHand] = useState([]);
   const [currentUserTurn, setCurrentUserTurn] = useState("");
-  const [userPlayerNumber, setUserPlayerNumber] = useState(0);
   const [selectedCards, setSelectedCards] = useState([]);
   const [player1, setPlayer1] = useState(null);
   const [player2, setPlayer2] = useState(null);
@@ -49,7 +48,6 @@ export const GamePage = ({ socket }) => {
           setUserHand(data.user_hand);
           setLastPlayedHand(data.last_played_hand);
           setCurrentUserTurn(data.current_user_turn);
-          setUserPlayerNumber(data.client_id);
           setLoading(false);
 
           break;
