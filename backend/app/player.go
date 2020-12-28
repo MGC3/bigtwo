@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"sync"
+
+	"github.com/MGC3/bigtwo/backend/app/game"
 )
 
 type playerId int
@@ -26,6 +28,10 @@ type player struct {
 
 	toServerLock sync.Mutex
 	toServer     chan Message
+
+	// TODO is there a better place to put this?
+	// This won't get used until a game is started
+	currentHand []game.Card
 }
 
 // TODO hacky way of using channels in main?

@@ -60,10 +60,25 @@ type RoomCreatedData struct {
 	RoomId roomId `json:"room_id"`
 }
 
-// Type == "room_state_changed"
+// Type == "room_state"
 type RoomStateData struct {
 	PlayerNames []string `json:"players"`
 	ClientId    int      `json:"client_id"`
+}
+
+// Type == "game_state"
+type GameStateData struct {
+	UserHand        []game.Card       `json:"user_hand"`
+	AllPlayerHands  []OtherPlayerHand `json:"all_player_hands"`
+	LastPlayedHand  []game.Card       `json:"last_played_hand"`
+	LastAction      string            `json:"last_action"`
+	CurrentUserTurn string            `json:"current_user_turn"`
+	ClientId        int               `json:"client_id"`
+}
+
+type OtherPlayerHand struct {
+	Name  string `json:"name"`
+	Count int    `json:"count"`
 }
 
 //

@@ -90,9 +90,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 	// TODO check if the display name isn't none?
 	receive.Player.displayName = nested.Name
 
-	// TODO check that there are < 4 players in the room
 	room, ok := w.WaitingForPlayers[nested.RoomId]
-
 	if !ok {
 		log.Printf("failed to join room because room %d not found", nested.RoomId)
 		return
