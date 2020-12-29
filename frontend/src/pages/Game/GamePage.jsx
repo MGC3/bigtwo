@@ -114,7 +114,7 @@ export const GamePage = ({ socket }) => {
               <Button
                 text="Pass"
                 onClick={handlePassButtonClick}
-                disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
+                disabled={player1.name !== currentUserTurn || !lastPlayedHand} // uncomment when game_state WS response implemented
               />
               <Button
                 text="Play"
