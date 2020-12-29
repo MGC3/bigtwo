@@ -139,6 +139,10 @@ func (p PlayedHand) ToString() string {
 	return ret[:len(ret)-2]
 }
 
+func (p PlayedHand) ToJson() []JsonCard {
+	return CardListToJson(p.Cards)
+}
+
 //
 // Private helper functions
 //

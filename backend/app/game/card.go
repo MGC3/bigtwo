@@ -9,8 +9,13 @@ var rankStrings = [...]string{"3", "4", "5", "6", "7", "8", "9", "10", "J", "Q",
 var suitStrings = [...]string{"C", "S", "H", "D"}
 
 type Card struct {
-	Rank int `json:"rank"`
-	Suit int `json:"suit"`
+	Rank int
+	Suit int
+}
+
+type JsonCard struct {
+	Rank string `json:"rank"`
+	Suit string `json:"suit"`
 }
 
 //
@@ -50,6 +55,21 @@ func (c Card) ToString() string {
 	}
 
 	return rankStrings[c.Rank] + suitStrings[c.Suit]
+}
+
+func (c Card) ToJsonCard() JsonCard {
+	return JsonCard{
+		Rank: rankStrings[c.Rank],
+		Suit: suitStrings[c.Suit],
+	}
+}
+
+func CardListToJson(cards []Card) []JsonCard {
+	ret := []JsonCard{}
+	for _, c := range cards {
+		ret = append(ret, c.ToJsonCard())
+	}
+	return ret
 }
 
 //

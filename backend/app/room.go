@@ -157,7 +157,7 @@ func (r *room) handleRequestGameState(receive Message) {
 	log.Printf("Got request game state message from player %s\n", receive.Player.displayName)
 
 	gameState := r.gameStateData()
-	gameState.UserHand = receive.Player.currentHand
+	gameState.UserHand = game.CardListToJson(receive.Player.currentHand)
 	gameState.ClientId = r.clientIdFromPlayerId(receive.Player.id)
 
 	send, err := NewMessage(nil, "game_state", gameState)
@@ -223,7 +223,7 @@ func (r *room) roomStateData() RoomStateData {
 func (r *room) gameStateData() GameStateData {
 	ret := GameStateData{
 		AllPlayerHands: []OtherPlayerHand{},
-		LastPlayedHand: r.lastPlayedHand.Cards,
+		LastPlayedHand: r.lastPlayedHand.ToJson(),
 	}
 
 	if !r.gameStarted {

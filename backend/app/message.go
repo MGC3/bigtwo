@@ -43,7 +43,7 @@ type JoinRoomData struct {
 
 // Type == "play_move"
 type PlayMoveData struct {
-	Cards []game.Card `json:"cards"`
+	Cards []game.JsonCard `json:"cards"`
 }
 
 //
@@ -68,9 +68,9 @@ type RoomStateData struct {
 
 // Type == "game_state"
 type GameStateData struct {
-	UserHand        []game.Card       `json:"user_hand"`
+	UserHand        []game.JsonCard   `json:"user_hand"`
 	AllPlayerHands  []OtherPlayerHand `json:"all_player_hands"`
-	LastPlayedHand  []game.Card       `json:"last_played_hand"`
+	LastPlayedHand  []game.JsonCard   `json:"last_played_hand"`
 	LastAction      string            `json:"last_action"`
 	CurrentUserTurn string            `json:"current_user_turn"`
 	ClientId        int               `json:"client_id"`
