@@ -1,7 +1,7 @@
 package app
 
 import (
-	//	"encoding/json"
+	"encoding/json"
 	"github.com/MGC3/bigtwo/backend/app/game"
 	"log"
 	//    "sync"
@@ -35,7 +35,10 @@ type room struct {
 	// TODO can/should this be refactored to be more "modular"?
 	clientIdTurn   int
 	numTurnsPassed int
-	lastPlayedHand game.PlayedHand
+
+	// Indicates that anything can be played
+	lastHandCleared bool
+	lastPlayedHand  game.PlayedHand
 }
 
 func (r *room) serve() {
@@ -131,6 +134,7 @@ func (r *room) handleStartGame(receive Message) {
 		}
 
 		// TODO make this a constant somewhere?
+		// TODO check that player doesn't have 3 twos?
 		player.currentHand = deck.Deal(13)
 	}
 
@@ -168,6 +172,61 @@ func (r *room) handleRequestGameState(receive Message) {
 	receive.Player.toPlayer <- send
 }
 
+func (r *room) handlePlayMove(receive Message) {
+	log.Printf("Got play cards message %v\n", receive)
+
+	var data PlayMoveData
+	err := json.Unmarshal(receive.Data, &data)
+
+	if err != nil {
+		log.Printf("handlePlayCards failed to unmarshal data %v\n", err)
+		sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
+		return
+	}
+
+	cards, err := game.CardListFromJson(data.Cards)
+	if err != nil {
+		log.Printf("handlePlayCards failed to get card list from data %v\n", err)
+		sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
+		return
+	}
+
+	receive.Player.currentHand, err = game.RemoveCardsFromList(receive.Player.currentHand, cards)
+	if err != nil {
+		log.Printf("handlePlayCards cards from client not in hand: %v, %v\n", cards, receive.Player.currentHand)
+		sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
+		return
+	}
+
+	newHand, err := game.NewPlayedHand(cards)
+	if err != nil {
+		log.Printf("handlePlayCards failed to create played hand from cards %v, err=%v\n", cards, err)
+		sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
+		return
+	}
+
+	// bypass check if last hand cleared
+	if !r.lastHandCleared {
+		newBeatsOld, err := newHand.Beats(r.lastPlayedHand)
+		if err != nil || !newBeatsOld {
+			log.Printf("handlePlayCards got %v, but doesn't beat last hand %v\n", newHand, r.lastPlayedHand)
+			sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
+			return
+		}
+	}
+
+	r.lastHandCleared = false
+	r.numTurnsPassed = 0
+	r.lastPlayedHand = newHand
+	r.clientIdTurn = (r.clientIdTurn + 1) % r.numPlayers()
+
+	r.pushGameStateToPlayers()
+}
+
+func (r *room) handlePassMove(receive Message) {
+	log.Printf("Got pass move message %v\n", receive)
+}
+
 func (r *room) pushRoomStateToPlayers() {
 	data := r.roomStateData()
 	for clientId, player := range r.players {
@@ -180,6 +239,24 @@ func (r *room) pushRoomStateToPlayers() {
 			log.Printf("pushRoomStateToPlayers err %v\n", err)
 			return
 		}
+		player.toPlayer <- msg
+	}
+}
+
+func (r *room) pushGameStateToPlayers() {
+	data := r.gameStateData()
+	for clientId, player := range r.players {
+		if player == nil {
+			break
+		}
+		data.ClientId = clientId
+		data.UserHand = game.CardListToJson(player.currentHand)
+		msg, err := NewMessage(player, "game_state", data)
+		if err != nil {
+			log.Printf("pushGameStateToPlayers err %v\n", err)
+			return
+		}
+
 		player.toPlayer <- msg
 	}
 }
@@ -223,12 +300,20 @@ func (r *room) roomStateData() RoomStateData {
 func (r *room) gameStateData() GameStateData {
 	ret := GameStateData{
 		AllPlayerHands: []OtherPlayerHand{},
-		LastPlayedHand: r.lastPlayedHand.ToJson(),
 	}
 
 	if !r.gameStarted {
 		log.Printf("gameStateData() called before game started\n")
 		return ret
+	}
+
+	if r.lastHandCleared {
+		// Send empty array to frontend if the hand is cleared
+		// ie start of game or everyone passed
+		// indicates that any hand can be played by the next player
+		ret.LastPlayedHand = []game.JsonCard{}
+	} else {
+		ret.LastPlayedHand = r.lastPlayedHand.ToJson()
 	}
 
 	for _, player := range r.players {
@@ -276,17 +361,24 @@ func (r *room) numPlayers() int {
 	return n
 }
 
+func sendErrorToPlayer(toPlayer chan Message, errorString string) {
+	log.Printf("error: %s\n", errorString)
+	msg, _ := NewMessage(nil, "error", ErrorData{Reason: errorString})
+	toPlayer <- msg
+}
+
 func newRoom(id roomId) *room {
 	r := room{
 		// TODO generate real random-ish string
-		id:             "ABCD",
-		players:        [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
-		receive:        make(chan Message),
-		lobbyHandlers:  make(map[string]func(Message)),
-		gameHandlers:   make(map[string]func(Message)),
-		gameStarted:    false,
-		clientIdTurn:   0,
-		numTurnsPassed: 0,
+		id:              "ABCD",
+		players:         [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
+		receive:         make(chan Message),
+		lobbyHandlers:   make(map[string]func(Message)),
+		gameHandlers:    make(map[string]func(Message)),
+		gameStarted:     false,
+		clientIdTurn:    0,
+		numTurnsPassed:  0,
+		lastHandCleared: true,
 	}
 
 	r.lobbyHandlers["disconnect"] = r.handleDisconnect
@@ -296,6 +388,8 @@ func newRoom(id roomId) *room {
 
 	r.gameHandlers["disconnect"] = r.handleDisconnect
 	r.gameHandlers["request_game_state"] = r.handleRequestGameState
+	r.gameHandlers["play_move"] = r.handlePlayMove
+	r.gameHandlers["pass_move"] = r.handlePassMove
 
 	go r.serve()
 	return &r

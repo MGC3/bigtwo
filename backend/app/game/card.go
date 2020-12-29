@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"log"
 )
 
 // rank and suit string arrays are ordered by ascending value
@@ -64,12 +65,65 @@ func (c Card) ToJsonCard() JsonCard {
 	}
 }
 
+func (c Card) Equals(other Card) bool {
+	return c.Rank == other.Rank && c.Suit == other.Suit
+}
+
+func (j JsonCard) ToCard() (Card, error) {
+	return NewCard(j.Rank, j.Suit)
+}
+
 func CardListToJson(cards []Card) []JsonCard {
 	ret := []JsonCard{}
 	for _, c := range cards {
 		ret = append(ret, c.ToJsonCard())
 	}
 	return ret
+}
+
+func CardListFromJson(jsonCards []JsonCard) ([]Card, error) {
+	ret := []Card{}
+	for _, j := range jsonCards {
+		card, err := j.ToCard()
+		if err != nil {
+			log.Printf("CardListFromJson failed %v\n", err)
+			return ret, err
+		}
+		ret = append(ret, card)
+	}
+	return ret, nil
+}
+
+func CardInList(card Card, list []Card) bool {
+	for _, c1 := range list {
+		if c1.Equals(card) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Creates a new slice without cards in toRemove, returns an error
+// and the original hand if a card in toRemove is not in hand
+// TODO do this in place, or not necessary?
+func RemoveCardsFromList(hand, toRemove []Card) ([]Card, error) {
+	// Validate that all cards in toRemove are in hand
+	for _, card := range toRemove {
+		if !CardInList(card, hand) {
+			return hand, fmt.Errorf("error card %v not in hand %v\n", card, hand)
+		}
+	}
+
+	// Actually remove cards in second pass
+	ret := []Card{}
+	for _, card := range hand {
+		if !CardInList(card, toRemove) {
+			ret = append(ret, card)
+		}
+	}
+
+	return ret, nil
 }
 
 //
