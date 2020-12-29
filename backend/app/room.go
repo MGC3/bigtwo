@@ -230,6 +230,18 @@ func (r *room) handlePlayMove(receive Message) {
 
 func (r *room) handlePassMove(receive Message) {
 	log.Printf("Got pass move message %v\n", receive)
+	if r.lastHandCleared {
+		log.Printf("Can't pass on free move\n")
+		sendErrorToPlayer(receive.Player.toPlayer, "Pass not allowed")
+		return
+	}
+
+	r.numTurnsPassed += 1
+	if r.numTurnsPassed >= r.numPlayers()-1 {
+		r.lastHandCleared = true
+	}
+	r.clientIdTurn = (r.clientIdTurn + 1) % r.numPlayers()
+	r.pushGameStateToPlayers()
 }
 
 func (r *room) pushRoomStateToPlayers() {
