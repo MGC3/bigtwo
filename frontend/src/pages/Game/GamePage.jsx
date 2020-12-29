@@ -34,22 +34,14 @@ export const GamePage = ({ socket }) => {
 
           data.all_player_hands.splice(data.client_id, 1);
           let otherPlayers = data.all_player_hands;
-
           setPlayer2(otherPlayers[0]);
-
-          if (otherPlayers[1]) {
-            setPlayer3(otherPlayers[1]);
-          }
-
-          if (otherPlayers[2]) {
-            setPlayer4(otherPlayers[2]);
-          }
+          otherPlayers[1] ? setPlayer3(otherPlayers[1]) : setPlayer3(null);
+          otherPlayers[2] ? setPlayer4(otherPlayers[2]) : setPlayer4(null);
 
           setUserHand(data.user_hand);
           setLastPlayedHand(data.last_played_hand);
           setCurrentUserTurn(data.current_user_turn);
           setLoading(false);
-
           break;
         default:
           console.warn("received unknown WS type");
