@@ -97,7 +97,13 @@ export const GamePage = ({ socket }) => {
             )}
           </LeftPlayerSlot>
           <DroppableArea>
-            {lastPlayedHand && <Hand cards={lastPlayedHand} />}
+            {lastPlayedHand && (
+              <Hand
+                cards={lastPlayedHand}
+                selectedCards={selectedCards}
+                setSelectedCards={setSelectedCards}
+              />
+            )}
           </DroppableArea>
           <RightPlayerSlot rotate>
             {player4 && (
