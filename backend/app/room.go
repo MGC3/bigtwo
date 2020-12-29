@@ -83,6 +83,7 @@ func (r *room) handleDisconnect(receive Message) {
 
 	// TODO what if game has started?
 	if r.gameStarted {
+		r.clientIdTurn = r.clientIdTurn % r.numPlayers()
 		r.pushGameStateToPlayers()
 	} else {
 		r.pushRoomStateToPlayers()
