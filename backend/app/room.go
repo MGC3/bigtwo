@@ -195,13 +195,6 @@ func (r *room) handlePlayMove(receive Message) {
 		return
 	}
 
-	receive.Player.currentHand, err = game.RemoveCardsFromList(receive.Player.currentHand, cards)
-	if err != nil {
-		log.Printf("handlePlayCards cards from client not in hand: %v, %v\n", cards, receive.Player.currentHand)
-		sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
-		return
-	}
-
 	newHand, err := game.NewPlayedHand(cards)
 	if err != nil {
 		log.Printf("handlePlayCards failed to create played hand from cards %v, err=%v\n", cards, err)
@@ -219,11 +212,19 @@ func (r *room) handlePlayMove(receive Message) {
 		}
 	}
 
+	// If we're here, then all the hand can be played as long as the cards exist
+	// in the player's current hand
+	receive.Player.currentHand, err = game.RemoveCardsFromList(receive.Player.currentHand, cards)
+	if err != nil {
+		log.Printf("handlePlayCards cards from client not in hand: %v, %v\n", cards, receive.Player.currentHand)
+		sendErrorToPlayer(receive.Player.toPlayer, "Invalid hand")
+		return
+	}
+
 	r.lastHandCleared = false
 	r.numTurnsPassed = 0
 	r.lastPlayedHand = newHand
 	r.clientIdTurn = (r.clientIdTurn + 1) % r.numPlayers()
-
 	r.pushGameStateToPlayers()
 }
 
