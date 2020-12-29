@@ -82,7 +82,11 @@ func (r *room) handleDisconnect(receive Message) {
 	}
 
 	// TODO what if game has started?
-	r.pushRoomStateToPlayers()
+	if r.gameStarted {
+		r.pushGameStateToPlayers()
+	} else {
+		r.pushRoomStateToPlayers()
+	}
 }
 
 func (r *room) handleJoinRoom(receive Message) {
@@ -228,6 +232,11 @@ func (r *room) handlePassMove(receive Message) {
 }
 
 func (r *room) pushRoomStateToPlayers() {
+	if r.gameStarted {
+		log.Printf("pushRoomStateToPlayers called when game started")
+		return
+	}
+
 	data := r.roomStateData()
 	for clientId, player := range r.players {
 		if player == nil {
@@ -244,6 +253,11 @@ func (r *room) pushRoomStateToPlayers() {
 }
 
 func (r *room) pushGameStateToPlayers() {
+	if !r.gameStarted {
+		log.Printf("pushGameStateToPlayers called when game not started")
+		return
+	}
+
 	data := r.gameStateData()
 	for clientId, player := range r.players {
 		if player == nil {
