@@ -66,6 +66,7 @@ export const GamePage = ({ socket }) => {
         },
       })
     );
+    setSelectedCards([]);
   };
 
   const handlePassButtonClick = () => {
