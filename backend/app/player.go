@@ -77,7 +77,10 @@ func (p *player) receiveThread() {
 
 			// TODO signal to server that this user has disconnected
 			log.Printf("receiveThread stopping for player %d\n", p.id)
-			p.toServer <- Message{Player: p, Type: "disconnect", Data: []byte{}}
+			disconnectMessage := Message{Player: p, Type: "disconnect", Data: []byte{}}
+			p.toServer <- disconnectMessage
+
+			// Server is assumed to forward to sendthread as well to close that thread
 			return
 		}
 

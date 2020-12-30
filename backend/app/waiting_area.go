@@ -8,14 +8,13 @@ import (
 )
 
 type WaitingArea struct {
-	WaitingForPlayers map[roomId]*room
-	InGame            map[roomId]*room
+	Rooms map[roomId]*room
 	// TODO lock needed?
 	ConnectedPlayersNotInRoom map[playerId]*player
 	nextId                    playerId
-	Receive                   chan Message
-
-	messageHandlers map[string]func(Message)
+	FromPlayers               chan Message
+	FromRooms                 chan roomId
+	messageHandlers           map[string]func(Message)
 }
 
 // Serves connected players not in a room.
@@ -23,24 +22,38 @@ type WaitingArea struct {
 func (w *WaitingArea) Serve() {
 	log.Println("WaitingArea serving...")
 	for {
-		receive := <-w.Receive
-		handler, ok := w.messageHandlers[receive.Type]
 
-		// TODO distinguish between messages allowed from clients
-		// and internal messages, and validate messages from clients
+		select {
+		case receive := <-w.FromPlayers:
+			handler, ok := w.messageHandlers[receive.Type]
 
-		if !ok {
-			log.Printf("Unhandled message type %s\n", receive.Type)
-			continue
+			// TODO distinguish between messages allowed from clients
+			// and internal messages, and validate messages from clients
+			// TODO refactor to use different channels for internal
+			// messages
+
+			if !ok {
+				log.Printf("Unhandled message type %s\n", receive.Type)
+				continue
+			}
+
+			handler(receive)
+
+		case roomIdToCleanup := <-w.FromRooms:
+			log.Printf("Got roomToCleanup %v", roomIdToCleanup)
+			delete(w.Rooms, roomIdToCleanup)
+			log.Printf("Rooms left ")
+			for id := range w.Rooms {
+				log.Printf("%s ", id)
+			}
+			log.Printf("\n")
 		}
-
-		handler(receive)
 	}
 }
 
 func (w *WaitingArea) CreateNewRoom() roomId {
-	r := newRoom()
-	w.WaitingForPlayers[r.id] = r
+	r := newRoom(w.FromRooms)
+	w.Rooms[r.id] = r
 	return r.id
 }
 
@@ -50,7 +63,7 @@ func (w *WaitingArea) handleNewConnectedPlayer(receive Message) {
 		return
 	}
 
-	receive.Player.initialize(w.nextId, w.Receive)
+	receive.Player.initialize(w.nextId, w.FromPlayers)
 	w.ConnectedPlayersNotInRoom[receive.Player.id] = receive.Player
 	w.nextId += 1
 }
@@ -104,7 +117,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 
 	receive.Player.displayName = nested.Name
 
-	room, ok := w.WaitingForPlayers[formattedRoomId]
+	room, ok := w.Rooms[formattedRoomId]
 	if !ok {
 		log.Printf("failed to join room because room %d not found", nested.RoomId)
 		sendErrorToPlayer(receive.Player.toPlayer, "Room not found")
@@ -148,11 +161,11 @@ func (w *WaitingArea) handleDisconnect(receive Message) {
 
 func NewWaitingArea() WaitingArea {
 	w := WaitingArea{
-		WaitingForPlayers:         make(map[roomId]*room),
-		InGame:                    make(map[roomId]*room),
+		Rooms:                     make(map[roomId]*room),
 		ConnectedPlayersNotInRoom: make(map[playerId]*player),
 		nextId:                    0,
-		Receive:                   make(chan Message),
+		FromPlayers:               make(chan Message),
+		FromRooms:                 make(chan roomId),
 		messageHandlers:           make(map[string]func(Message)),
 	}
 

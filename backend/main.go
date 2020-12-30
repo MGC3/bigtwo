@@ -44,7 +44,9 @@ func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 		log.Printf("EstablishWebsocketConnection failed %v\n", err)
 		return
 	}
-	waitingArea.Receive <- toWaitingArea
+
+	// TODO fix?
+	waitingArea.FromPlayers <- toWaitingArea
 	fmt.Println("Added new player to waiting area")
 }
 
