@@ -25,7 +25,7 @@ type room struct {
 	// players
 	players       [maxNumPlayersInRoom]*player
 	receive       chan Message
-	toWaitingArea chan Message
+	toWaitingArea chan roomId
 	lobbyHandlers map[string]func(Message)
 
 	// TODO waiting area channel to signal when room is done with the game?
@@ -64,6 +64,13 @@ func (r *room) serve() {
 		}
 
 		handler(receive)
+
+		// TODO is this special case needed? To shut down thread properly
+		if receive.Type == "disconnect" && r.numPlayers() == 0 {
+			log.Printf("serve() thread for room %s exiting\n", r.id)
+			r.toWaitingArea <- r.id
+			return
+		}
 	}
 }
 
@@ -76,15 +83,17 @@ func (r *room) handleDisconnect(receive Message) {
 		return
 	}
 
+	// TODO is this necessary to forward this here?
+	receive.Player.toPlayer <- receive
+
 	// move all players to fill in disconnected players
 	r.players[disconnectedClientId] = nil
 	for i := disconnectedClientId + 1; i < maxNumPlayersInRoom; i++ {
 		r.players[i-1] = r.players[i]
 	}
 
-	// TODO handle if there are no players left
+	// If no players left, return early
 	if r.numPlayers() == 0 {
-		log.Printf("TODO clean up room")
 		return
 	}
 
@@ -434,12 +443,13 @@ func generateRandomRoomCode() roomId {
 	return roomId(code)
 }
 
-func newRoom() *room {
+func newRoom(toWaitingArea chan roomId) *room {
 	r := room{
 		id: generateRandomRoomCode(),
 		// TODO don't initialize everything to nil
 		players:         [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
 		receive:         make(chan Message),
+		toWaitingArea:   toWaitingArea,
 		lobbyHandlers:   make(map[string]func(Message)),
 		gameHandlers:    make(map[string]func(Message)),
 		inGame:          false,

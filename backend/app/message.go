@@ -10,8 +10,10 @@ import (
 // a string that identifies what kind of message is stored
 // as bytes in data
 type Message struct {
+	// TODO abstract concept of a 'sender'?
 	Player *player `json:"-"`
-	Type   string  `json:"type"`
+
+	Type string `json:"type"`
 
 	// TODO add 'internal' bool to be able to tell if the message was received
 	// from a client or if the message was created internally on the backend
