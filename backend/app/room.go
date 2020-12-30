@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/MGC3/bigtwo/backend/app/game"
 	"log"
-	//    "sync"
-	//	"github.com/gorilla/websocket"
+	"math/rand"
 )
 
 const (
 	maxNumPlayersInRoom = 4
+	roomCodeLetters     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 type roomId string
@@ -215,6 +215,7 @@ func (r *room) handlePlayMove(receive Message) {
 
 	// If we're here, then all the hand can be played as long as the cards exist
 	// in the player's current hand
+	// RemoveCardsFromList returns the original hand if there was an error
 	receive.Player.currentHand, err = game.RemoveCardsFromList(receive.Player.currentHand, cards)
 	if err != nil {
 		log.Printf("handlePlayCards cards from client not in hand: %v, %v\n", cards, receive.Player.currentHand)
@@ -375,6 +376,7 @@ func (r *room) gameStateData() GameStateData {
 	}
 
 	ret.CurrentUserTurn = r.players[r.clientIdTurn].displayName
+	// TODO detect game over?
 	return ret
 }
 
@@ -395,10 +397,20 @@ func sendErrorToPlayer(toPlayer chan Message, errorString string) {
 	toPlayer <- msg
 }
 
-func newRoom(id roomId) *room {
+// Generates a 4 letter room code
+func generateRandomRoomCode() roomId {
+	code := make([]byte, 4)
+
+	for i := range code {
+		code[i] = roomCodeLetters[rand.Intn(len(roomCodeLetters))]
+	}
+
+	return roomId(code)
+}
+
+func newRoom() *room {
 	r := room{
-		// TODO generate real random-ish string
-		id:              "ABCD",
+		id:              generateRandomRoomCode(),
 		players:         [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
 		receive:         make(chan Message),
 		lobbyHandlers:   make(map[string]func(Message)),

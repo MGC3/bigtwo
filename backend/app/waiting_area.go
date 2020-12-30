@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"log"
+	"strings"
 	//    "sync"
 )
 
@@ -35,8 +36,8 @@ func (w *WaitingArea) Serve() {
 }
 
 func (w *WaitingArea) CreateNewRoom() roomId {
-	r := newRoom("ABCD")
-	w.WaitingForPlayers[r.id] = newRoom("ABCD")
+	r := newRoom()
+	w.WaitingForPlayers[r.id] = r
 	return r.id
 }
 
@@ -79,7 +80,8 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 		return
 	}
 
-	log.Printf("got join room %s from player %s\n", nested.RoomId, nested.Name)
+	formattedRoomId := roomId(strings.ToUpper(string(nested.RoomId)))
+	log.Printf("got join room %s from player %s\n", formattedRoomId, nested.Name)
 	if _, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]; !ok {
 		// TODO send error messages or something
 		log.Printf("failed to join room because player %d not found\n", receive.Player.id)
@@ -88,9 +90,14 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 
 	// Set player's name from message
 	// TODO check if the display name isn't none?
+	if nested.Name == "" {
+		log.Printf("failed to join room because invalid (null) display name from player\n")
+		return
+	}
+
 	receive.Player.displayName = nested.Name
 
-	room, ok := w.WaitingForPlayers[nested.RoomId]
+	room, ok := w.WaitingForPlayers[formattedRoomId]
 	if !ok {
 		log.Printf("failed to join room because room %d not found", nested.RoomId)
 		return

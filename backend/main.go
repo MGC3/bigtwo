@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	//    "encoding/json"
 	//    "strconv"
 	"sync"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -47,7 +49,9 @@ func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
+	seed := time.Now().UnixNano()
+	rand.Seed(seed)
+	log.Printf("Backend running with seed %v\n", seed)
 	go waitingArea.Serve()
 
 	// I am a web programmer
