@@ -166,7 +166,7 @@ func (r *room) handleStartGame(receive Message) {
 	// or choose a random player to start?
 	r.clientIdTurn = rand.Intn(r.numPlayers())
 	r.inGame = true
-	r.lastPlayedHand = game.PlayedHand{}
+	r.lastHandCleared = true
 
 	inGameMessage, err := NewMessage(nil, "game_started", EmptyData{})
 
