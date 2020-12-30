@@ -181,6 +181,13 @@ func (r *room) handleRequestGameState(receive Message) {
 func (r *room) handlePlayMove(receive Message) {
 	log.Printf("Got play cards message %v\n", receive)
 
+	receivedClientId := r.clientIdFromPlayerId(receive.Player.id)
+	if receivedClientId != r.clientIdTurn {
+		log.Printf("handlePlayMove got move from player %d, but turn is %d\n", receivedClientId, r.clientIdTurn)
+		sendErrorToPlayer(receive.Player.toPlayer, "It is not your turn")
+		return
+	}
+
 	var data PlayMoveData
 	err := json.Unmarshal(receive.Data, &data)
 
@@ -233,6 +240,13 @@ func (r *room) handlePlayMove(receive Message) {
 
 func (r *room) handlePassMove(receive Message) {
 	log.Printf("Got pass move message %v\n", receive)
+	receivedClientId := r.clientIdFromPlayerId(receive.Player.id)
+	if receivedClientId != r.clientIdTurn {
+		log.Printf("handlePlayMove got move from player %d, but turn is %d\n", receivedClientId, r.clientIdTurn)
+		sendErrorToPlayer(receive.Player.toPlayer, "It is not your turn")
+		return
+	}
+
 	if r.lastHandCleared {
 		log.Printf("Can't pass on free move\n")
 		sendErrorToPlayer(receive.Player.toPlayer, "Pass not allowed")
