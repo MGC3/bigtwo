@@ -3,8 +3,15 @@ import styled from "styled-components";
 import { PageWrapper } from "../../components/PageWrapper";
 import { Button } from "../../components/Button";
 import { Hand } from "../../components/Hand";
+import { Dialog, DialogActions, DialogTitle } from "@material-ui/core/";
 
-export const GamePage = ({ socket }) => {
+export const GamePage = ({
+  match: {
+    params: { roomId },
+  },
+  socket,
+  history,
+}) => {
   const [loading, setLoading] = useState(true);
   const [userHand, setUserHand] = useState([]);
   const [lastPlayedHand, setLastPlayedHand] = useState([]);
@@ -14,6 +21,8 @@ export const GamePage = ({ socket }) => {
   const [player2, setPlayer2] = useState(null);
   const [player3, setPlayer3] = useState(null);
   const [player4, setPlayer4] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState("");
 
   useEffect(() => {
     socket.send(
@@ -30,10 +39,13 @@ export const GamePage = ({ socket }) => {
 
       switch (type) {
         case "game_state":
+          // set users data
           setPlayer1(data.all_player_hands[data.client_id]);
 
-          data.all_player_hands.splice(data.client_id, 1);
-          let otherPlayers = data.all_player_hands;
+          // set all other players data
+          const otherPlayers = data.all_player_hands.filter(
+            (player, idx) => idx !== data.client_id
+          );
           setPlayer2(otherPlayers[0]);
           otherPlayers[1] ? setPlayer3(otherPlayers[1]) : setPlayer3(null);
           otherPlayers[2] ? setPlayer4(otherPlayers[2]) : setPlayer4(null);
@@ -42,6 +54,12 @@ export const GamePage = ({ socket }) => {
           setLastPlayedHand(data.last_played_hand);
           setCurrentUserTurn(data.current_user_turn);
           setLoading(false);
+
+          // check win condition
+          if (data.game_over) {
+            setWinner(findWinner(data));
+            setGameOver(true);
+          }
           break;
         default:
           console.warn("received unknown WS type");
@@ -67,6 +85,17 @@ export const GamePage = ({ socket }) => {
         type: "pass_move",
       })
     );
+  };
+
+  const findWinner = (data) => {
+    return (
+      data.all_player_hands.find((player) => player.count === 0)?.name ||
+      "Error detecting winner"
+    );
+  };
+
+  const handleBackToLobbyClick = () => {
+    history.push(`/room/${roomId}`);
   };
 
   return (
@@ -134,6 +163,19 @@ export const GamePage = ({ socket }) => {
           </>
         )}
       </GameContainer>
+      <Dialog
+        open={gameOver}
+        aria-labelledby="form-dialog-title"
+        maxWidth="xs"
+        fullWidth
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle id="form-dialog-title">{winner} won!</DialogTitle>
+        <DialogActions>
+          <Button onClick={handleBackToLobbyClick} text="Back to Room" />
+        </DialogActions>
+      </Dialog>
     </PageWrapper>
   );
 };
