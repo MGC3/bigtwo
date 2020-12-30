@@ -59,6 +59,8 @@ export const GamePage = ({
           if (data.game_over) {
             setWinner(findWinner(data));
             setGameOver(true);
+          } else {
+            setGameOver(false);
           }
           break;
         default:
