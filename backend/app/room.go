@@ -160,7 +160,7 @@ func (r *room) handleStartGame(receive Message) {
 
 		// TODO make this a constant somewhere?
 		// TODO check that player doesn't have 3 twos?
-		player.currentHand = deck.Deal(1)
+		player.currentHand = deck.Deal(13)
 	}
 
 	// TODO first player must have 3 of clubs?
