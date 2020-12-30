@@ -11,7 +11,6 @@ export const LobbyPage = ({
   history,
 }) => {
   const [loading, setLoading] = useState(true);
-  const [playerId, setPlayerId] = useState(null);
   const [players, setPlayers] = useState([]);
 
   useEffect(() => {
@@ -29,7 +28,6 @@ export const LobbyPage = ({
 
       switch (type) {
         case "room_state":
-          setPlayerId(data.client_id);
           setPlayers(data.players);
           setLoading(false);
           break;
@@ -62,7 +60,7 @@ export const LobbyPage = ({
         "Loading"
       ) : (
         <>
-          <StyledParagraph>Room Code: {roomId}</StyledParagraph>
+          <StyledParagraph>Room Code: {roomId.toUpperCase()}</StyledParagraph>
           {players.length > 1 ? (
             <Button
               onClick={handleStartGameClick}
