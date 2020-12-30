@@ -1,9 +1,9 @@
 package app
 
 import (
-	//"log"
 	"encoding/json"
 	"github.com/MGC3/bigtwo/backend/app/game"
+	"log"
 )
 
 // This type defines the outer message type, which contains
@@ -99,4 +99,10 @@ func NewMessage(player *player, messageType string, data interface{}) (Message, 
 	}
 
 	return m, nil
+}
+
+func sendErrorToPlayer(toPlayer chan Message, errorString string) {
+	log.Printf("error: %s\n", errorString)
+	msg, _ := NewMessage(nil, "error", ErrorData{Reason: errorString})
+	toPlayer <- msg
 }

@@ -25,6 +25,7 @@ type room struct {
 	// players
 	players       [maxNumPlayersInRoom]*player
 	receive       chan Message
+	toWaitingArea chan Message
 	lobbyHandlers map[string]func(Message)
 
 	// TODO waiting area channel to signal when room is done with the game?
@@ -391,13 +392,6 @@ func (r *room) numPlayers() int {
 	return n
 }
 
-func sendErrorToPlayer(toPlayer chan Message, errorString string) {
-	log.Printf("error: %s\n", errorString)
-	msg, _ := NewMessage(nil, "error", ErrorData{Reason: errorString})
-	toPlayer <- msg
-}
-
-// Generates a 4 letter room code
 func generateRandomRoomCode() roomId {
 	code := make([]byte, 4)
 

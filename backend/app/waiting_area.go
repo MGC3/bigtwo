@@ -48,24 +48,25 @@ func (w *WaitingArea) handleNewConnectedPlayer(receive Message) {
 	}
 
 	receive.Player.initialize(w.nextId, w.Receive)
-	log.Printf("waiting area got new player %v\n", receive.Player)
 	w.ConnectedPlayersNotInRoom[receive.Player.id] = receive.Player
 	w.nextId += 1
 }
 
 func (w *WaitingArea) handleCreateRoom(receive Message) {
-	newRoomId := w.CreateNewRoom()
-	log.Printf("created new room %s\n", newRoomId)
 	p, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]
 
 	if !ok {
-		log.Printf("Could not find player %v\n", receive.Player)
+		sendErrorToPlayer(p.toPlayer, "Player not found")
 		return
 	}
+
+	newRoomId := w.CreateNewRoom()
+	log.Printf("created new room %s\n", newRoomId)
 
 	send, err := NewMessage(receive.Player, "room_created", RoomCreatedData{RoomId: newRoomId})
 	if err != nil {
 		log.Printf("Error creating message %v\n", err)
+		sendErrorToPlayer(p.toPlayer, "Something bad happened")
 		return
 	}
 	p.toPlayer <- send
@@ -77,6 +78,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 	err := json.Unmarshal(receive.Data, &nested)
 	if err != nil {
 		log.Printf("Could not unmarshal nested packet %v", err)
+		sendErrorToPlayer(receive.Player.toPlayer, "Something bad happened")
 		return
 	}
 
@@ -85,6 +87,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 	if _, ok := w.ConnectedPlayersNotInRoom[receive.Player.id]; !ok {
 		// TODO send error messages or something
 		log.Printf("failed to join room because player %d not found\n", receive.Player.id)
+		sendErrorToPlayer(receive.Player.toPlayer, "Player not found")
 		return
 	}
 
@@ -92,6 +95,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 	// TODO check if the display name isn't none?
 	if nested.Name == "" {
 		log.Printf("failed to join room because invalid (null) display name from player\n")
+		sendErrorToPlayer(receive.Player.toPlayer, "Need name from player")
 		return
 	}
 
@@ -100,11 +104,19 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 	room, ok := w.WaitingForPlayers[formattedRoomId]
 	if !ok {
 		log.Printf("failed to join room because room %d not found", nested.RoomId)
+		sendErrorToPlayer(receive.Player.toPlayer, "Room not found")
 		return
 	}
 
 	if room.numPlayers() >= maxNumPlayersInRoom {
 		log.Printf("failed to join room because room %d has %d players\n", nested.RoomId, room.numPlayers())
+		sendErrorToPlayer(receive.Player.toPlayer, "Room is full")
+		return
+	}
+
+	if room.gameStarted {
+		log.Printf("failed to join room %s because game has started\n", nested.RoomId)
+		sendErrorToPlayer(receive.Player.toPlayer, "Cannot join room with game in progress")
 		return
 	}
 
@@ -115,8 +127,6 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 
 	// Forward the message to the room itself
 	room.receive <- receive
-
-	log.Printf("Room state: %v\n", room)
 }
 
 func (w *WaitingArea) handleDisconnect(receive Message) {
