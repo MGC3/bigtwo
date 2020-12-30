@@ -101,9 +101,8 @@ func (r *room) handleDisconnect(receive Message) {
 	if r.inGame {
 		if r.numPlayers() == 1 {
 			r.inGame = false
-		} else {
-			r.clientIdTurn = r.clientIdTurn % r.numPlayers()
 		}
+		r.clientIdTurn = r.clientIdTurn % r.numPlayers()
 		r.pushGameStateToPlayers()
 	} else {
 		r.pushRoomStateToPlayers()
