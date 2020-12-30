@@ -1,8 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-export const PageWrapper = ({ children }) => {
-  return <PageWrapperContainer>{children}</PageWrapperContainer>;
+export const PageWrapper = ({ children, customStyles }) => {
+  return (
+    <PageWrapperContainer style={customStyles}>{children}</PageWrapperContainer>
+  );
 };
 
 const PageWrapperContainer = styled.div`
@@ -11,7 +13,7 @@ const PageWrapperContainer = styled.div`
   align-items: center;
   text-align: center;
   background: white;
-  padding: 32px;
+  padding: 16px 32px;
   border-radius: 8px;
 
   // FF7 styles below attrib to: https://codepen.io/Kaizzo/pen/aGWwMM

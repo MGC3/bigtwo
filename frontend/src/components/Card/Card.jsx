@@ -54,7 +54,7 @@ const CardContainer = styled.div`
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   background: ${(props) => (props.isSelected ? "#fffae6" : "#ffffff")};
-  transform: ${(props) => (props.isSelected ? "translateY(-50px)" : "")};
+  transform: ${(props) => (props.isSelected ? "translateY(-32px)" : "")};
   color: black;
 
   &:hover {

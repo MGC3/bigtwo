@@ -103,7 +103,7 @@ export const LandingPage = ({ history, socket }) => {
   return (
     <PageWrapper>
       <form
-        style={{ maxWidth: "260px", display: "flex", flexDirection: "column" }}
+        style={{ maxWidth: "280px", display: "flex", flexDirection: "column" }}
       >
         <Button
           onClick={(e) => handleCreateGameClick(e)}
@@ -120,7 +120,6 @@ export const LandingPage = ({ history, socket }) => {
             style: {
               fontSize: "40px",
               textAlign: "center",
-              // color: "white",
             },
             maxLength: 4,
           }}

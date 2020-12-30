@@ -113,12 +113,13 @@ export const GamePage = ({ socket }) => {
               <Button
                 text="Pass"
                 onClick={handlePassButtonClick}
-                disabled={player1.name !== currentUserTurn || !lastPlayedHand} // uncomment when game_state WS response implemented
+                disabled={player1.name !== currentUserTurn || !lastPlayedHand}
+                style={{ marginRight: "24px" }}
               />
               <Button
                 text="Play"
                 onClick={handlePlayButtonClick}
-                disabled={player1.name !== currentUserTurn} // uncomment when game_state WS response implemented
+                disabled={player1.name !== currentUserTurn}
               />
             </ButtonGroup>
             <PlayerSlot>
@@ -144,19 +145,18 @@ const GameContainer = styled.div`
   align-items: center;
   max-width: 1400px;
   width: 100%;
-  border: 1px solid red;
 `;
 
 const DroppableArea = styled.div`
   width: 600px;
   height: 300px;
-  border: 1px dashed pink;
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 16px;
 `;
 
 const CenterRow = styled.div`

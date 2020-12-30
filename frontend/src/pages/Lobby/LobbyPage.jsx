@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import { PageWrapper } from "../../components/PageWrapper";
 import { Button } from "../../components/Button";
 
@@ -50,23 +51,53 @@ export const LobbyPage = ({
   };
 
   return (
-    <PageWrapper>
+    <PageWrapper
+      customStyles={{
+        padding: "16px",
+        alignItems: "flex-start",
+        minWidth: "300px",
+      }}
+    >
       {loading ? (
         "Loading"
       ) : (
-        <div>
-          <h1>Room id is: {roomId}</h1>
-          <Button onClick={handleStartGameClick} text="Start Game" />
-          <h1>Player id is: {playerId}</h1>
-          <h1>You are: {players[playerId]}</h1>
-          <h1>Players list:</h1>
-          <ul>
+        <>
+          <StyledParagraph>Room Code: {roomId}</StyledParagraph>
+          {players.length > 1 ? (
+            <Button
+              onClick={handleStartGameClick}
+              text="Start Game"
+              style={{ alignSelf: "center" }}
+            />
+          ) : (
+            <Button
+              onClick={handleStartGameClick}
+              text="Waiting for Players"
+              disabled
+              style={{ alignSelf: "center" }}
+            />
+          )}
+          <StyledParagraph>Players</StyledParagraph>
+          <StyledList>
             {players.map((name) => (
-              <li>{name}</li>
+              <li>"{name}"</li>
             ))}
-          </ul>
-        </div>
+          </StyledList>
+        </>
       )}
     </PageWrapper>
   );
 };
+
+const StyledParagraph = styled.p`
+  text-align: left;
+  margin-bottom: 0;
+  margin-top: 0;
+`;
+
+const StyledList = styled.ul`
+  text-align: left;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+`;

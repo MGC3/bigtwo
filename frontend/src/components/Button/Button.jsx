@@ -1,10 +1,37 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import finger from "../../assets/images/finger.png";
 
-export const Button = ({ onClick, text, classes, icon, ...props }) => {
+export const Button = ({
+  onClick,
+  text,
+  classes,
+  customIcon,
+  disabled,
+  ...props
+}) => {
+  const [isHovering, setIsHovering] = useState(false);
+
+  // hack: fixes bug where hovering remains true after a users turn
+  useEffect(() => {
+    setIsHovering(false);
+  }, [disabled]);
+
   return (
-    <ButtonWrapper className={classes} onClick={onClick} {...props}>
-      {icon}
+    <ButtonWrapper
+      className={classes}
+      onClick={onClick}
+      customIcon={customIcon}
+      disabled={disabled}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    >
+      {customIcon ? (
+        customIcon
+      ) : (
+        <FingerIcon src={finger} isHovering={isHovering && !disabled} />
+      )}
       {text}
     </ButtonWrapper>
   );
@@ -16,7 +43,7 @@ const ButtonWrapper = styled.button`
   align-items: center;
   justify-content: center;
   height: 64px;
-  padding: 0 32px;
+  padding: ${(props) => (props.customIcon ? "24px" : "0 40px 0 0")};
   background-color: #fff;
   border-radius: 8px;
   font-weight: 700;
@@ -41,4 +68,10 @@ const ButtonWrapper = styled.button`
   &:focus {
     outline: none;
   }
+`;
+
+const FingerIcon = styled.img`
+  width: 32px;
+  margin-right: 8px;
+  visibility: ${(props) => (props.isHovering ? "visible" : "hidden")};
 `;

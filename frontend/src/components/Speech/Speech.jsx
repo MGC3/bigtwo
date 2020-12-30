@@ -43,7 +43,7 @@ export const Speech = ({ callbackFn }) => {
     <>
       <Button
         onClick={voiceStart}
-        icon={isListening ? <AiFillAudio /> : <AiOutlineAudio />}
+        customIcon={isListening ? <AiFillAudio /> : <AiOutlineAudio />}
       />
     </>
   );
