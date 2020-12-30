@@ -26,6 +26,9 @@ func (w *WaitingArea) Serve() {
 		receive := <-w.Receive
 		handler, ok := w.messageHandlers[receive.Type]
 
+		// TODO distinguish between messages allowed from clients
+		// and internal messages, and validate messages from clients
+
 		if !ok {
 			log.Printf("Unhandled message type %s\n", receive.Type)
 			continue
