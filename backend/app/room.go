@@ -99,7 +99,11 @@ func (r *room) handleDisconnect(receive Message) {
 
 	// TODO what if game has started?
 	if r.inGame {
-		r.clientIdTurn = r.clientIdTurn % r.numPlayers()
+		if r.numPlayers() == 1 {
+			r.inGame = false
+		} else {
+			r.clientIdTurn = r.clientIdTurn % r.numPlayers()
+		}
 		r.pushGameStateToPlayers()
 	} else {
 		r.pushRoomStateToPlayers()
@@ -156,13 +160,14 @@ func (r *room) handleStartGame(receive Message) {
 
 		// TODO make this a constant somewhere?
 		// TODO check that player doesn't have 3 twos?
-		player.currentHand = deck.Deal(13)
+		player.currentHand = deck.Deal(1)
 	}
 
 	// TODO first player must have 3 of clubs?
 	// or choose a random player to start?
 	r.clientIdTurn = rand.Intn(r.numPlayers())
 	r.inGame = true
+	r.lastPlayedHand = game.PlayedHand{}
 
 	inGameMessage, err := NewMessage(nil, "game_started", EmptyData{})
 
@@ -177,6 +182,9 @@ func (r *room) handleStartGame(receive Message) {
 		}
 		player.toPlayer <- inGameMessage
 	}
+
+	// for players stuck on previous game page
+	r.pushGameStateToPlayers()
 }
 
 func (r *room) handleRequestGameState(receive Message) {
@@ -247,6 +255,10 @@ func (r *room) handlePlayMove(receive Message) {
 		return
 	}
 
+	if len(receive.Player.currentHand) == 0 {
+		r.inGame = false
+	}
+
 	r.lastHandCleared = false
 	r.numTurnsPassed = 0
 	r.lastPlayedHand = newHand
@@ -299,10 +311,6 @@ func (r *room) pushRoomStateToPlayers() {
 }
 
 func (r *room) pushGameStateToPlayers() {
-	if !r.inGame {
-		log.Printf("pushGameStateToPlayers called when game not started")
-		return
-	}
 
 	data := r.gameStateData()
 	for clientId, player := range r.players {
@@ -362,11 +370,6 @@ func (r *room) gameStateData() GameStateData {
 		AllPlayerHands: []OtherPlayerHand{},
 	}
 
-	if !r.inGame {
-		log.Printf("gameStateData() called before game started\n")
-		return ret
-	}
-
 	if r.lastHandCleared {
 		// Send empty array to frontend if the hand is cleared
 		// ie start of game or everyone passed
@@ -376,20 +379,10 @@ func (r *room) gameStateData() GameStateData {
 		ret.LastPlayedHand = r.lastPlayedHand.ToJson()
 	}
 
-	ret.GameOver = false
-
-	// If all but one player disconnected
-	if r.numPlayers() == 1 {
-		ret.GameOver = true
-	}
-
+	ret.GameOver = !r.inGame
 	for _, player := range r.players {
 		if player == nil {
 			break
-		}
-
-		if len(player.currentHand) == 0 {
-			ret.GameOver = true
 		}
 
 		playerHand := OtherPlayerHand{
