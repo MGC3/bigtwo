@@ -4,8 +4,7 @@ WORKDIR /go/src/app
 COPY . .
 
 RUN go get -v
-
-RUN make
+RUN go build 
 
 # TODO expose ports
 # docker build -t bigtwo-container .
