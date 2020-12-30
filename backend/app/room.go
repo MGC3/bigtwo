@@ -30,7 +30,7 @@ type room struct {
 
 	// TODO waiting area channel to signal when room is done with the game?
 	gameHandlers map[string]func(Message)
-	gameStarted  bool
+	inGame       bool
 
 	//
 	// TODO can/should this be refactored to be more "modular"?
@@ -52,14 +52,14 @@ func (r *room) serve() {
 
 		var handler func(Message)
 		var ok bool
-		if r.gameStarted {
+		if r.inGame {
 			handler, ok = r.gameHandlers[receive.Type]
 		} else {
 			handler, ok = r.lobbyHandlers[receive.Type]
 		}
 
 		if !ok {
-			log.Printf("Unhandled message type %s for game started = %v\n", receive.Type, r.gameStarted)
+			log.Printf("Unhandled message type %s for game started = %v\n", receive.Type, r.inGame)
 			continue
 		}
 
@@ -82,8 +82,14 @@ func (r *room) handleDisconnect(receive Message) {
 		r.players[i-1] = r.players[i]
 	}
 
+	// TODO handle if there are no players left
+	if r.numPlayers() == 0 {
+		log.Printf("TODO clean up room")
+		return
+	}
+
 	// TODO what if game has started?
-	if r.gameStarted {
+	if r.inGame {
 		r.clientIdTurn = r.clientIdTurn % r.numPlayers()
 		r.pushGameStateToPlayers()
 	} else {
@@ -146,9 +152,10 @@ func (r *room) handleStartGame(receive Message) {
 
 	// TODO first player must have 3 of clubs?
 	// or choose a random player to start?
-	r.gameStarted = true
+	r.clientIdTurn = rand.Intn(r.numPlayers())
+	r.inGame = true
 
-	gameStartedMessage, err := NewMessage(nil, "game_started", EmptyData{})
+	inGameMessage, err := NewMessage(nil, "game_started", EmptyData{})
 
 	if err != nil {
 		log.Printf("handleStartGame could not create game started msg %v\n", err)
@@ -159,7 +166,7 @@ func (r *room) handleStartGame(receive Message) {
 		if player == nil {
 			break
 		}
-		player.toPlayer <- gameStartedMessage
+		player.toPlayer <- inGameMessage
 	}
 }
 
@@ -262,7 +269,7 @@ func (r *room) handlePassMove(receive Message) {
 }
 
 func (r *room) pushRoomStateToPlayers() {
-	if r.gameStarted {
+	if r.inGame {
 		log.Printf("pushRoomStateToPlayers called when game started")
 		return
 	}
@@ -283,7 +290,7 @@ func (r *room) pushRoomStateToPlayers() {
 }
 
 func (r *room) pushGameStateToPlayers() {
-	if !r.gameStarted {
+	if !r.inGame {
 		log.Printf("pushGameStateToPlayers called when game not started")
 		return
 	}
@@ -346,7 +353,7 @@ func (r *room) gameStateData() GameStateData {
 		AllPlayerHands: []OtherPlayerHand{},
 	}
 
-	if !r.gameStarted {
+	if !r.inGame {
 		log.Printf("gameStateData() called before game started\n")
 		return ret
 	}
@@ -360,9 +367,20 @@ func (r *room) gameStateData() GameStateData {
 		ret.LastPlayedHand = r.lastPlayedHand.ToJson()
 	}
 
+	ret.GameOver = false
+
+	// If all but one player disconnected
+	if r.numPlayers() == 1 {
+		ret.GameOver = true
+	}
+
 	for _, player := range r.players {
 		if player == nil {
 			break
+		}
+
+		if len(player.currentHand) == 0 {
+			ret.GameOver = true
 		}
 
 		playerHand := OtherPlayerHand{
@@ -378,7 +396,7 @@ func (r *room) gameStateData() GameStateData {
 		ret.LastAction = "played_hand"
 	}
 
-	if r.clientIdTurn < 0 || r.clientIdTurn > maxNumPlayersInRoom {
+	if r.clientIdTurn < 0 || r.clientIdTurn >= r.numPlayers() {
 		log.Printf("bad current client id %d\n", r.clientIdTurn)
 		return ret
 	}
@@ -418,12 +436,13 @@ func generateRandomRoomCode() roomId {
 
 func newRoom() *room {
 	r := room{
-		id:              generateRandomRoomCode(),
+		id: generateRandomRoomCode(),
+		// TODO don't initialize everything to nil
 		players:         [maxNumPlayersInRoom]*player{nil, nil, nil, nil},
 		receive:         make(chan Message),
 		lobbyHandlers:   make(map[string]func(Message)),
 		gameHandlers:    make(map[string]func(Message)),
-		gameStarted:     false,
+		inGame:          false,
 		clientIdTurn:    0,
 		numTurnsPassed:  0,
 		lastHandCleared: true,

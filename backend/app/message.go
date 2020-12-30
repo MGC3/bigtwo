@@ -74,6 +74,7 @@ type GameStateData struct {
 	LastAction      string            `json:"last_action"`
 	CurrentUserTurn string            `json:"current_user_turn"`
 	ClientId        int               `json:"client_id"`
+	GameOver        bool              `json:"game_over"`
 }
 
 type OtherPlayerHand struct {

@@ -126,6 +126,8 @@ func (p *player) sendThread() {
 		err := p.conn.WriteJSON(msg)
 		if err != nil {
 			log.Printf("sendThread write failed %v\n", err)
+			// Don't let thread die here -- need to wait for disconnect message
+			// to avoid deadlock maybe not 100% sure
 		}
 	}
 }

@@ -117,7 +117,7 @@ func (w *WaitingArea) handleJoinRoom(receive Message) {
 		return
 	}
 
-	if room.gameStarted {
+	if room.inGame {
 		log.Printf("failed to join room %s because game has started\n", nested.RoomId)
 		sendErrorToPlayer(receive.Player.toPlayer, "Cannot join room with game in progress")
 		return
