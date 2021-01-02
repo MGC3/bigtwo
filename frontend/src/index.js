@@ -5,10 +5,12 @@ import { Routes } from "./routes/router";
 import { Layout } from "./layout";
 import "./shared/styles/global.css";
 
-let socket = new WebSocket("ws://localhost:8000");
-socket.onmessage = function (event) {
-  console.log("Socket got, ", event);
-};
+let endPoint =
+  process.env.NODE_ENV === "development"
+    ? "localhost:8000"
+    : "bigtwo-backend.herokuapp.com";
+
+let socket = new WebSocket(`ws://${endPoint}`);
 
 const App = () => {
   return (
