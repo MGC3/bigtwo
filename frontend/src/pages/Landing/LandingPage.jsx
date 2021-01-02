@@ -100,6 +100,13 @@ export const LandingPage = ({ history, socket }) => {
     setOpen(false);
   };
 
+  const handleKeyPress = (e) => {
+    // make enter key trigger join room function
+    if (e.keyCode === 13) {
+      handleJoinRoomClick(e, roomId);
+    }
+  };
+
   return (
     <PageWrapper>
       <form
@@ -116,6 +123,7 @@ export const LandingPage = ({ history, socket }) => {
           value={roomId}
           onChange={handleTextFieldChange}
           fullWidth={true}
+          onKeyDown={handleKeyPress}
           inputProps={{
             style: {
               fontSize: "40px",
