@@ -7,10 +7,10 @@ import "./shared/styles/global.css";
 
 let endPoint =
   process.env.NODE_ENV === "development"
-    ? "localhost:8000"
-    : "bigtwo-backend.herokuapp.com";
+    ? "ws://localhost:8000"
+    : "wss://bigtwo-backend.herokuapp.com";
 
-let socket = new WebSocket(`ws://${endPoint}`);
+let socket = new WebSocket(endPoint);
 
 const App = () => {
   return (
