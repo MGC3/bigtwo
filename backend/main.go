@@ -5,9 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	//    "encoding/json"
-	//    "strconv"
-	"sync"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -23,13 +22,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// TODO sync better?
-var bigLock = sync.Mutex{}
-
 // TODO only one GET request is serviced at a time
 func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
-	bigLock.Lock()
-	defer bigLock.Unlock()
 	fmt.Println("EstablishWebsocketConnection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -51,6 +45,21 @@ func EstablishWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := 8000
+
+	// ./backend[0] port[1]
+	// /bin/sh[0] -c[1] backend port
+	if len(os.Args) == 2 {
+		arg, err := strconv.Atoi(os.Args[1])
+		if err == nil {
+			port = arg
+		} else {
+			log.Printf("Error: port argument %s not recognized: %v\n", os.Args[1], err)
+		}
+	}
+
+	log.Printf("Exposing port %d\n", port)
+
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	log.Printf("Backend running with seed %v\n", seed)
@@ -67,5 +76,5 @@ func main() {
 	//r.HandleFunc("/rooms/{roomId}", JoinRoomHandler).Methods("GET")
 
 	// Bind to a port and pass our router in
-	log.Fatal(http.ListenAndServe(":8000", handlers.CORS()(r)))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS()(r)))
 }

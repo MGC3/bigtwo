@@ -18,7 +18,7 @@ fmt:
 	echo "Formatting..."
 	gofmt -l -s -w .
 
-docker_run:
-	echo "Running backend in docker"
-	sudo docker build -t bigtwo-container .
-	sudo docker run -p 8000:8000 bigtwo-container
+deploy:
+	sudo heroku container:push web --app=bigtwo-backend
+	sudo heroku container:release web --app=bigtwo-backend
+
