@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/MGC3/bigtwo/backend/app/game"
 )
@@ -19,6 +20,11 @@ import (
 type playerId int
 
 const invalidPlayerId = -1
+
+const (
+	pongWait   = 20 * time.Second
+	pingPeriod = 18 * time.Second
+)
 
 type player struct {
 	id          playerId
@@ -66,6 +72,13 @@ func (p *player) receiveThread() {
 	// TODO set connection parameters
 	log.Printf("receiveThread running for player %d", p.id)
 	var msg Message
+	p.conn.SetReadDeadline(time.Now().Add(pongWait))
+
+	p.conn.SetPongHandler(func(string) error {
+		p.conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
+
 	for {
 		_, bytes, err := p.conn.ReadMessage()
 		if err != nil {
@@ -113,24 +126,34 @@ func (p *player) swapToServerChannel(newChannel chan Message) {
 // Thread for sending message from room to websocket connection
 func (p *player) sendThread() {
 	log.Printf("sendThread running for player %d\n", p.id)
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		p.conn.Close()
+	}()
+
 	for {
-		msg, ok := <-p.toPlayer
-		// TODO signal that connection is over by closing channel? Better way to do this?
-		if !ok {
-			p.conn.WriteMessage(websocket.CloseMessage, []byte{})
-			return
-		}
+		select {
+		case msg, ok := <-p.toPlayer:
+			// TODO signal that connection is over by closing channel? Better way to do this?
+			if !ok {
+				p.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
 
-		if msg.Type == "disconnect" {
-			log.Printf("SendThread for player %d got dc message. Exiting", p.id)
-			return
-		}
+			if msg.Type == "disconnect" {
+				log.Printf("SendThread for player %d got dc message. Exiting", p.id)
+				return
+			}
 
-		err := p.conn.WriteJSON(msg)
-		if err != nil {
-			log.Printf("sendThread write failed %v\n", err)
-			// Don't let thread die here -- need to wait for disconnect message
-			// to avoid deadlock maybe not 100% sure
+			err := p.conn.WriteJSON(msg)
+			if err != nil {
+				log.Printf("sendThread write failed %v\n", err)
+				// Don't let thread die here -- need to wait for disconnect message
+				// to avoid deadlock maybe not 100% sure
+			}
+		case <-ticker.C:
+			p.conn.WriteMessage(websocket.PingMessage, nil)
 		}
 	}
 }
